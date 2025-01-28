@@ -12,9 +12,8 @@ jobs:
 
     steps:
       - name: change permission
-        # 마지막 jwp-shopping-order 는 repository 이름입니다.
         run: |
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/auction-api 
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/APT_AUCTION_API 
 
       - uses: actions/checkout@v3
       - name: gradle bootjar
@@ -28,7 +27,6 @@ jobs:
             sudo lsof -i :8080 | awk 'NR!=1 {print $2}' | sudo xargs kill -9
           fi
 
-      # 스프링 프로그램을 실행합니다
       - name: deploy
         run: |
-          sudo java -jar build/libs/auction-api-AUCTION.jar --spring.profiles.active=prod &
+          sudo java -jar build/libs/auction-api.jar --spring.profiles.active=prod &
