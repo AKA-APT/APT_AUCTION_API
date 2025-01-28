@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: auction-api
+  config:
+    import: aws-parameterstore:/config/${spring.application.name}_prod/
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    open-in-view: false
+
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
+      table-name: SPRING_SESSION
+    timeout: 360000  # 세션 만료시간
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: lax
+        max-age: 360000
