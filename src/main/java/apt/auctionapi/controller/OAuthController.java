@@ -1,9 +1,9 @@
 package apt.auctionapi.controller;
 
-import apt.auctionapi.service.OAuthService;
+import apt.auctionapi.domain.SessionUser;
 import apt.auctionapi.dto.response.ErrorResponse;
 import apt.auctionapi.dto.response.LoginResponse;
-import apt.auctionapi.domain.SessionUser;
+import apt.auctionapi.service.OAuthService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

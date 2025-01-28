@@ -10,6 +10,7 @@ public record KakaoUserInfo(
         public record Profile(
                 String nickname,
                 String profile_image_url
-        ) {}
+        ) {
+        }
     }
 }

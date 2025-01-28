@@ -7,4 +7,5 @@ public record OAuthTokenDto(
         String expires_in,
         String scope,
         String refresh_token_expires_in
-) {}
+) {
+}
