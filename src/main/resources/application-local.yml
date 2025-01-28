@@ -6,25 +6,26 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
   session:
     store-type: jdbc
     jdbc:
       initialize-schema: always
       table-name: SPRING_SESSION
-    timeout: 3600  # 세션 만료시간 (초)
-
+    timeout: 360000
 
 oauth2:
   kakao:
-    client-id: REST_API_KEY
-    client-secret: SECRET_KEY
-    redirect-uri: http://localhost:8080/api/oauth/kakao/callback
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_SECRET_KEY}
+    redirect-uri: ${LOCAL_KAKAO_REDIRECT_URI}
     token-uri: https://kauth.kakao.com/oauth/token
     user-info-uri: https://kapi.kakao.com/v2/user/me
-
 
 server:
   servlet:
@@ -33,4 +34,4 @@ server:
         secure: true
         http-only: true
         same-site: lax
-        max-age: 3600
+        max-age: 360000

@@ -1,24 +1,31 @@
 spring:
-  application:
-    name: auction-api
-  config:
-    import: aws-parameterstore:/config/${spring.application.name}_prod/
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
   jpa:
     hibernate:
       ddl-auto: none
     show-sql: false
-    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
   session:
-    store-type: jdbc
     jdbc:
       initialize-schema: always
       table-name: SPRING_SESSION
-    timeout: 360000  # 세션 만료시간
+    timeout: 360000  # 세션 만료시간 (초)
+
+oauth2:
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_SECRET_KEY}
+    redirect-uri: ${KAKAO_REDIRECT_URI}
+    token-uri: https://kauth.kakao.com/oauth/token
+    user-info-uri: https://kapi.kakao.com/v2/user/me
 
 server:
   servlet:
