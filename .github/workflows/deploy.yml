@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '21'
-          distribution: 'corretto'  # Amazon Corretto JDK 사용
+          distribution: 'corretto'
           cache: gradle
 
       - name: Grant execute permission for gradlew
@@ -38,11 +38,15 @@ jobs:
           fi
 
       - name: Deploy application
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_REGION: ap-northeast-2
         run: |
-          nohup sudo java \
+          nohup sudo -E bash -c 'AWS_ACCESS_KEY=$AWS_ACCESS_KEY AWS_SECRET_KEY=$AWS_SECRET_KEY AWS_REGION=$AWS_REGION java \
           -jar build/libs/auction-api.jar \
           --spring.profiles.active=prod \
-          > /home/ubuntu/auction-api.log 2>&1 &
+          > /home/ubuntu/auction-api.log 2>&1' &
 
       - name: Check application health
         run: |
@@ -52,5 +56,12 @@ jobs:
             echo "Application is healthy"
           else
             echo "Application failed to start"
+            cat /home/ubuntu/auction-api.log  # 실패 시 로그 출력
             exit 1
           fi
+
+      - name: Check application logs
+        if: always()  # 항상 로그 확인
+        run: |
+          echo "Recent application logs:"
+          tail -n 100 /home/ubuntu/auction-api.log

@@ -11,8 +11,6 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
-  profiles:
-    active: local
 
 ---
 spring:
@@ -30,7 +28,9 @@ spring:
   config:
     activate:
       on-profile: prod
-  cloud:
-    aws:
-      credentials:
-        instance-profile: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,env"
