@@ -1,4 +1,4 @@
-package apt.auctionapi.dto;
+package apt.auctionapi.domain;
 
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Role;

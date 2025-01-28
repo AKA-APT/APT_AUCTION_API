@@ -2,9 +2,9 @@ package apt.auctionapi.service;
 
 import apt.auctionapi.config.KakaoOAuthConfig;
 import apt.auctionapi.repository.MemberRepository;
-import apt.auctionapi.dto.KakaoUserInfo;
-import apt.auctionapi.dto.OAuthTokenDto;
-import apt.auctionapi.dto.SessionUser;
+import apt.auctionapi.auth.dto.KakaoUserInfo;
+import apt.auctionapi.auth.dto.OAuthTokenDto;
+import apt.auctionapi.domain.SessionUser;
 import apt.auctionapi.entity.Member;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

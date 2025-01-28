@@ -1,4 +1,4 @@
-package apt.auctionapi.dto;
+package apt.auctionapi.auth.dto;
 
 public record OAuthTokenDto(
         String access_token,
