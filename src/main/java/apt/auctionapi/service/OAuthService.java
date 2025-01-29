@@ -5,6 +5,7 @@ import apt.auctionapi.auth.dto.OAuthTokenDto;
 import apt.auctionapi.config.KakaoOAuthConfig;
 import apt.auctionapi.domain.SessionUser;
 import apt.auctionapi.entity.Member;
+import apt.auctionapi.entity.OAuthProvider;
 import apt.auctionapi.repository.MemberRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+
+import static apt.auctionapi.entity.OAuthProvider.*;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +59,7 @@ public class OAuthService {
         );
 
         if (response.getBody() == null) {
-            throw new RuntimeException("Failed to get access token from Kakao");
+            throw new IllegalStateException("Failed to get access token from Kakao");
         }
 
         return response.getBody().access_token();
@@ -95,6 +98,7 @@ public class OAuthService {
                         .nickname(userInfo.kakao_account().profile().nickname())
                         .profileImage(userInfo.kakao_account().profile().profile_image_url())
                         .providerId(String.valueOf(userInfo.id()))
+                        .provider(KAKAO)
                         .build());
 
         return memberRepository.save(member);
