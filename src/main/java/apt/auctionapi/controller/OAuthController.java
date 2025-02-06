@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/oauth")
+@RequestMapping("/api/v1/oauth")
 @RequiredArgsConstructor
 public class OAuthController {
     private final OAuthService oAuthService;
