@@ -9,6 +9,11 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/apt
+      database: apt
+
   session:
     store-type: jdbc
     jdbc:
