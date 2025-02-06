@@ -1,4 +1,4 @@
-package apt.auctionapi.dto;
+package apt.auctionapi.auth.dto;
 
 public record KakaoUserInfo(
         Long id,
@@ -10,6 +10,7 @@ public record KakaoUserInfo(
         public record Profile(
                 String nickname,
                 String profile_image_url
-        ) {}
+        ) {
+        }
     }
 }

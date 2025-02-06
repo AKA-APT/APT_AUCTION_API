@@ -1,13 +1,16 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  config:
+    import:
+      - "aws-parameterstore:/"
+  application:
+    name: auction-api
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
 
   data:
     mongodb:
@@ -21,22 +24,25 @@ spring:
       schema: classpath:org/springframework/session/jdbc/schema-h2.sql
       table-name: SPRING_SESSION
     timeout: 3600  # 세션 만료시간 (초)
+---
+spring:
+  config:
+    activate:
+      on-profile: local
 
+logging:
+  level:
+    io.awspring.cloud: DEBUG
+    com.amazonaws.util: DEBUG
 
-oauth2:
-  kakao:
-    client-id: ${REST_API_KEY}
-    client-secret: ${ADMIN_KEY}
-    redirect-uri: http://localhost:8080/api/oauth/kakao/callback
-    token-uri: https://kauth.kakao.com/oauth/token
-    user-info-uri: https://kapi.kakao.com/v2/user/me
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
 
-
-server:
-  servlet:
-    session:
-      cookie:
-        secure: true
-        http-only: true
-        same-site: lax
-        max-age: 3600
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,env"

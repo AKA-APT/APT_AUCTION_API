@@ -1,4 +1,4 @@
-package apt.auctionapi.dto;
+package apt.auctionapi.auth.dto;
 
 public record OAuthTokenDto(
         String access_token,
@@ -7,4 +7,5 @@ public record OAuthTokenDto(
         String expires_in,
         String scope,
         String refresh_token_expires_in
-) {}
+) {
+}

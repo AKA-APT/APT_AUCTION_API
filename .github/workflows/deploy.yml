@@ -1,0 +1,67 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: change permission
+        run: |
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/APT_AUCTION_API 
+
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew bootjar
+
+      - name: Kill process on port 8080 if exists
+        run: |
+          if sudo lsof -i :8080; then
+            echo "Port 8080 is already in use. Killing the process..."
+            sudo lsof -i :8080 | awk 'NR!=1 {print $2}' | sudo xargs kill -9
+          fi
+
+      - name: Deploy application
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_REGION: ap-northeast-2
+        run: |
+          nohup sudo -E bash -c 'AWS_ACCESS_KEY=$AWS_ACCESS_KEY AWS_SECRET_KEY=$AWS_SECRET_KEY AWS_REGION=$AWS_REGION java \
+          -jar build/libs/auction-api.jar \
+          --spring.profiles.active=prod \
+          > /home/ubuntu/auction-api.log 2>&1' &
+
+      - name: Check application health
+        run: |
+          echo "Waiting for application to start..."
+          sleep 30
+          if curl -f http://localhost:8080/actuator/health; then
+            echo "Application is healthy"
+          else
+            echo "Application failed to start"
+            cat /home/ubuntu/auction-api.log  # 실패 시 로그 출력
+            exit 1
+          fi
+
+      - name: Check application logs
+        if: always()  # 항상 로그 확인
+        run: |
+          echo "Recent application logs:"
+          tail -n 100 /home/ubuntu/auction-api.log
