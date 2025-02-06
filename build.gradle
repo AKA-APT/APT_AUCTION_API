@@ -53,3 +53,11 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootJar {
+    archiveFileName = 'auction-api.jar'  // jar 파일 이름 지정
+}
+
+jar {
+    enabled = false
+}
