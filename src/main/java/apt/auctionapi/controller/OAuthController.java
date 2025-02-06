@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/oauth")
+@RequestMapping("/api/oauth")
 @RequiredArgsConstructor
 public class OAuthController {
     private final OAuthService oAuthService;
