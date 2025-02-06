@@ -13,6 +13,10 @@ spring:
         format_sql: false
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+  data:
+    mongodb:
+      uri: ${MONGO_URL}
+
   session:
     jdbc:
       initialize-schema: always

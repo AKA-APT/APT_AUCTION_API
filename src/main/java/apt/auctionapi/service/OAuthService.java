@@ -5,7 +5,6 @@ import apt.auctionapi.auth.dto.OAuthTokenDto;
 import apt.auctionapi.config.KakaoOAuthConfig;
 import apt.auctionapi.domain.SessionUser;
 import apt.auctionapi.entity.Member;
-import apt.auctionapi.entity.OAuthProvider;
 import apt.auctionapi.repository.MemberRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import static apt.auctionapi.entity.OAuthProvider.*;
+import static apt.auctionapi.entity.OAuthProvider.KAKAO;
 
 @Service
 @RequiredArgsConstructor

@@ -12,6 +12,10 @@ spring:
       hibernate:
         format_sql: true
 
+  data:
+    mongodb:
+      uri: mongodb://3.35.222.245:27017/apt?authSource=admin
+
   session:
     jdbc:
       initialize-schema: always

@@ -1,7 +1,7 @@
 package apt.auctionapi.controller;
 
 import apt.auctionapi.domain.SessionUser;
-import apt.auctionapi.dto.response.LoginResponse;
+import apt.auctionapi.controller.dto.response.LoginResponse;
 import apt.auctionapi.service.OAuthService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

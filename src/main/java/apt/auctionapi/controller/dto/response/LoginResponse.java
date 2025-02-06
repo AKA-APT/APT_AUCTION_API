@@ -1,4 +1,4 @@
-package apt.auctionapi.dto.response;
+package apt.auctionapi.controller.dto.response;
 
 import apt.auctionapi.domain.SessionUser;
 

@@ -1,4 +1,4 @@
-package apt.auctionapi.dto.request;
+package apt.auctionapi.controller.dto.request;
 
 public record CreateTenderRequest(
         Long id,
