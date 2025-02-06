@@ -6,7 +6,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
@@ -19,7 +19,7 @@ spring:
 
   session:
     jdbc:
-      initialize-schema: always
+      initialize-schema: never
       table-name: SPRING_SESSION
     timeout: 360000  # 세션 만료시간 (초)
 

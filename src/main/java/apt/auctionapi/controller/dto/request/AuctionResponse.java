@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
 
-public record AuctionsResponse(
+public record AuctionResponse(
         String id,
         String keyword,
         LocalDateTime biddingDate,
@@ -34,14 +34,18 @@ public record AuctionsResponse(
         List<OccupantInfoResponse> occupantInfoList,
         LandInfoResponse landInfo
 ) {
-    public static List<AuctionsResponse> from(List<Auction> auctions) {
+    public static List<AuctionResponse> from(List<Auction> auctions) {
         return auctions == null ? List.of() : auctions.stream()
-                .map(AuctionsResponse::of)
+                .map(AuctionResponse::of)
                 .toList();
     }
 
-    private static AuctionsResponse of(Auction auction) {
-        return new AuctionsResponse(
+    public static AuctionResponse from(Auction auction) {
+        return AuctionResponse.of(auction);
+    }
+
+    private static AuctionResponse of(Auction auction) {
+        return new AuctionResponse(
                 auction.getId(),
                 auction.getKeyword(),
                 auction.getBiddingDate(),

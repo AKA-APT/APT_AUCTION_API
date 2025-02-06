@@ -1,6 +1,6 @@
 package apt.auctionapi.controller;
 
-import apt.auctionapi.controller.dto.request.AuctionsResponse;
+import apt.auctionapi.controller.dto.request.AuctionResponse;
 import apt.auctionapi.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +19,13 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @GetMapping
-    public ResponseEntity<List<AuctionsResponse>> getAuctions(
+    public ResponseEntity<List<AuctionResponse>> getAuctions(
             @RequestParam Double lbLat,
             @RequestParam Double lbLon,
             @RequestParam Double rtLat,
             @RequestParam Double rtLon
     ) {
-        List<AuctionsResponse> auctions = auctionService.findAuctionsWithinBounds(lbLat, lbLon, rtLat, rtLon);
+        List<AuctionResponse> auctions = auctionService.findAuctionsWithinBounds(lbLat, lbLon, rtLat, rtLon);
         return ResponseEntity.ok(auctions);
     }
 }
