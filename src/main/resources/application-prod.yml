@@ -39,3 +39,6 @@ server:
         http-only: true
         same-site: lax
         max-age: 360000
+
+swagger:
+  server-url: https://api.aptapt.kro.kr
