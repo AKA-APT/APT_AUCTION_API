@@ -42,3 +42,6 @@ server:
 
 swagger:
   server-url: https://api.aptapt.kro.kr
+
+app:
+  client-url: http://localhost:3000 # 테스트를 위해 로컬로 설정
