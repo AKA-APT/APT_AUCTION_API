@@ -32,15 +32,9 @@ public class AuctionService {
         validateLatitudeRange(lbLat, rtLat);
         validateLongitudeRange(lbLng, rtLng);
 
-        // 좌표값 보정 (좌하단이 우상단보다 큰 경우도 처리)
-        double minLat = Math.min(lbLat, rtLat);  // 최소 위도
-        double maxLat = Math.max(lbLat, rtLat);  // 최대 위도
-        double maxLng = Math.max(lbLng, rtLng);  // 최대 경도
-        double minLng = Math.min(lbLng, rtLng);  // 최소 경도
-
         // 보정된 좌표로 경매 정보 조회
         List<Auction> auctionsWithinBounds = auctionRepository.findAuctionsWithinBounds(
-                minLat, maxLat, minLng, maxLng
+            lbLat, rtLat, lbLng, rtLng
         );
 
         // bjdInfo와 location이 존재하는 경매만 필터링
