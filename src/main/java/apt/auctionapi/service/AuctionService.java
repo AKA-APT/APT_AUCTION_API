@@ -40,7 +40,7 @@ public class AuctionService {
 
         // 보정된 좌표로 경매 정보 조회
         List<Auction> auctionsWithinBounds = auctionRepository.findAuctionsWithinBounds(
-                minLng, maxLng, minLat, maxLat
+                minLat, maxLat, minLng, maxLng
         );
 
         // bjdInfo와 location이 존재하는 경매만 필터링

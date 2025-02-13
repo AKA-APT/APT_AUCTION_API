@@ -11,6 +11,6 @@ import apt.auctionapi.entity.Auction;
 @Repository
 public interface AuctionRepository extends MongoRepository<Auction, String> {
 
-    @Query("{ 'location.x': { $gte: ?0, $lte: ?1 }, 'location.y': { $gte: ?2, $lte: ?3 } }")
+    @Query("{ 'location.y': { $gte: ?0, $lte: ?1 }, 'location.x': { $gte: ?2, $lte: ?3 } }")
     List<Auction> findAuctionsWithinBounds(double minLat, double maxLat, double minLng, double maxLng);
 }
