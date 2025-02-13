@@ -27,10 +27,10 @@ public class AuctionService {
     ) {
         // null 값 확인
         validateCoordinatesNotNull(lbLat, lbLng, rtLat, rtLng);
-
-        // 위도, 경도가 올바른 범위인지 확인
-        validateLatitudeRange(lbLat, rtLat);
-        validateLongitudeRange(lbLng, rtLng);
+        //
+        // // 위도, 경도가 올바른 범위인지 확인
+        // validateLatitudeRange(lbLat, rtLat);
+        // validateLongitudeRange(lbLng, rtLng);
 
         // 보정된 좌표로 경매 정보 조회
         List<Auction> auctionsWithinBounds = auctionRepository.findAuctionsWithinBounds(
