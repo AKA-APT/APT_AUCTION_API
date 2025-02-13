@@ -1,4 +1,4 @@
-package apt.auctionapi.controller.dto.request;
+package apt.auctionapi.controller.dto.response;
 
 import apt.auctionapi.entity.Auction;
 import apt.auctionapi.entity.auction.*;

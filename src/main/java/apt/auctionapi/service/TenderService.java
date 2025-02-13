@@ -1,6 +1,6 @@
 package apt.auctionapi.service;
 
-import apt.auctionapi.controller.dto.request.AuctionResponse;
+import apt.auctionapi.controller.dto.response.AuctionResponse;
 import apt.auctionapi.controller.dto.request.CreateTenderRequest;
 import apt.auctionapi.controller.dto.response.TenderResponse;
 import apt.auctionapi.entity.Auction;

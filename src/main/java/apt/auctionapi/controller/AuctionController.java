@@ -1,6 +1,6 @@
 package apt.auctionapi.controller;
 
-import apt.auctionapi.controller.dto.request.AuctionResponse;
+import apt.auctionapi.controller.dto.response.AuctionResponse;
 import apt.auctionapi.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

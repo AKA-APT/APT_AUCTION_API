@@ -1,6 +1,6 @@
 package apt.auctionapi.service;
 
-import apt.auctionapi.controller.dto.request.AuctionResponse;
+import apt.auctionapi.controller.dto.response.AuctionResponse;
 import apt.auctionapi.entity.Auction;
 import apt.auctionapi.repository.AuctionRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,10 @@ public class AuctionService {
             Double rtLon
     ) {
         List<Auction> auctionsWithinBounds = auctionRepository.findAuctionsWithinBounds(lbLat, lbLon, rtLat, rtLon);
-        return AuctionResponse.from(auctionsWithinBounds);
+        List<Auction> result = auctionsWithinBounds.stream()
+                .filter(it -> it.getBjdInfo() != null)
+                .filter(it -> it.getBjdInfo().getLocation() != null)
+                .toList();
+        return AuctionResponse.from(result);
     }
 }
