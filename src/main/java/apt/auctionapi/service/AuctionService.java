@@ -19,11 +19,11 @@ public class AuctionService {
     @Transactional(readOnly = true)
     public List<AuctionResponse> findAuctionsWithinBounds(
             Double lbLat,
-            Double lbLon,
+            Double lbLng,
             Double rtLat,
-            Double rtLon
+            Double rtLng
     ) {
-        List<Auction> auctionsWithinBounds = auctionRepository.findAuctionsWithinBounds(lbLat, lbLon, rtLat, rtLon);
+        List<Auction> auctionsWithinBounds = auctionRepository.findAuctionsWithinBounds(lbLat, lbLng, rtLat, rtLng);
         List<Auction> result = auctionsWithinBounds.stream()
                 .filter(it -> it.getBjdInfo() != null)
                 .filter(it -> it.getBjdInfo().getLocation() != null)
