@@ -21,11 +21,13 @@ public class AuctionController {
     @GetMapping
     public ResponseEntity<List<AuctionResponse>> getAuctions(
             @RequestParam Double lbLat,
-            @RequestParam Double lbLon,
+            @RequestParam Double lbLng,
             @RequestParam Double rtLat,
-            @RequestParam Double rtLon
+            @RequestParam Double rtLng
     ) {
-        List<AuctionResponse> auctions = auctionService.findAuctionsWithinBounds(lbLat, lbLon, rtLat, rtLon);
+        List<AuctionResponse> auctions = auctionService.findAuctionsWithinBounds(
+                lbLat, lbLng, rtLat, rtLng
+        );
         return ResponseEntity.ok(auctions);
     }
 }
