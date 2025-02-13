@@ -47,4 +47,4 @@ swagger:
   server-url: http://localhost:8080
 
 app:
-  client-url: http://localhost:3000
+  client-url: http://localhost:3000/oauth/login/kakao
