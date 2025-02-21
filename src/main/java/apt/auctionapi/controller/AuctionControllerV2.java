@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v2/auctions")
+@RequestMapping("/api/v2/auctions")
 public class AuctionControllerV2 {
 
     private final AuctionServiceV2 auctionService;
