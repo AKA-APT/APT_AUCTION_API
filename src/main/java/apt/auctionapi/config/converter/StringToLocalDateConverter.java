@@ -1,4 +1,4 @@
-package apt.auctionapi.entity;
+package apt.auctionapi.config.converter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

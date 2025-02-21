@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -23,15 +24,13 @@ public class AuctionSchedule {
      * 경매 진행 날짜 (예: "2025-02-27")
      */
     @Field("dxdyYmd")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyyMMdd")
-    @JsonDeserialize(using = LocalDateDeserializer.class)  // JSON 변환 시 자동 변환
     private LocalDate auctionDate;
 
     /**
      * 경매 진행 시간 (예: "10:00")
      */
     @Field("dxdyHm")
-    private String auctionTime;
+    private LocalTime auctionTime;
 
     /**
      * 경매 진행 장소 (예: "경매법정(4별관 211호)")
