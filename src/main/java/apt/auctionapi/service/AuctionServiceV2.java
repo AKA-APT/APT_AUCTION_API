@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse;
+import apt.auctionapi.entity.AuctionEntity;
 import apt.auctionapi.entity.AuctionSummary;
 import apt.auctionapi.repository.AuctionRepositoryV2;
 import lombok.RequiredArgsConstructor;
@@ -64,5 +65,9 @@ public class AuctionServiceV2 {
             .caseBaseInfo(auctionSummary.getCaseBaseInfo())
             .auctionObject(auctionSummary.getAuctionObject())
             .build();
+    }
+
+    public AuctionEntity getAuctionById(String id) {
+        return auctionRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Auction not found"));
     }
 }
