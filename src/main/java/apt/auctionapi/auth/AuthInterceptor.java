@@ -31,6 +31,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         boolean requiresAuth = false;
         for (Parameter parameter : handlerMethod.getMethod().getParameters()) {
             if (parameter.isAnnotationPresent(AuthMember.class)) {
+                AuthMember annotation = parameter.getAnnotation(AuthMember.class);
+                if (!annotation.required()) {
+                    return true;
+                }
                 requiresAuth = true;
                 break;
             }
