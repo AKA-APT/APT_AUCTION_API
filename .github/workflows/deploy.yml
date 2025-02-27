@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: change permission
         run: |
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/APT_AUCTION_API 
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/backend-actions-runner/_work/APT_AUCTION_API 
 
       - uses: actions/checkout@v3
 
