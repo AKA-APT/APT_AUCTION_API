@@ -1,77 +1,85 @@
 package apt.auctionapi.service;
 
-import apt.auctionapi.controller.dto.response.AuctionResponse;
-import apt.auctionapi.entity.Auction;
+import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
+import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse;
+import apt.auctionapi.entity.Interest;
+import apt.auctionapi.entity.Member;
+import apt.auctionapi.entity.auction.Auction;
+import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.repository.AuctionRepository;
+import apt.auctionapi.repository.InterestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+/**
+ * 경매 데이터 서비스 (Auction Service)
+ * <p>
+ * 이 클래스는 경매 데이터 조회 및 관련 비즈니스 로직을 담당합니다.
+ */
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class AuctionService {
 
     private final AuctionRepository auctionRepository;
+    private final InterestRepository interestRepository;
 
-    @Transactional(readOnly = true)
-    public List<AuctionResponse> findAuctionsWithinBounds(
-            Double lbLat,  // 좌하단 위도
-            Double lbLng,  // 좌하단 경도
-            Double rtLat,  // 우상단 위도
-            Double rtLng   // 우상단 경도
+    public List<AuctionSummaryGroupedResponse> getAuctionsByLocationRange(
+            double lbLat,
+            double lbLng,
+            double rtLat,
+            double rtLng
     ) {
-        // null 값 확인
-        validateCoordinatesNotNull(lbLat, lbLng, rtLat, rtLng);
-        //
-        // // 위도, 경도가 올바른 범위인지 확인
-        // validateLatitudeRange(lbLat, rtLat);
-        // validateLongitudeRange(lbLng, rtLng);
+        // DB에서 좌표 범위 내의 경매 데이터를 조회
+        List<AuctionSummary> auctionSummaries = auctionRepository.findByLocationRange(lbLat, lbLng, rtLat, rtLng);
 
-        // 보정된 좌표로 경매 정보 조회
-        List<Auction> auctionsWithinBounds = auctionRepository.findAuctionsWithinBounds(
-            lbLat, rtLat, lbLng, rtLng
-        );
+        // 같은 좌표(lat, lng)를 기준으로 그룹화
+        Map<String, List<InnerAuctionSummaryResponse>> groupedAuctions = auctionSummaries.stream()
+                .filter(auction -> auction.getAuctionObject() != null)  // Null 체크
+                .collect(Collectors.groupingBy(
+                        auction -> auction.getAuctionObject().getLatitude() + "," + auction.getAuctionObject().getLongitude(),
+                        Collectors.mapping(InnerAuctionSummaryResponse::from, Collectors.toList())
+                ));
 
-        // bjdInfo와 location이 존재하는 경매만 필터링
-        List<Auction> result = auctionsWithinBounds.stream()
-                .filter(it -> it.getBjdInfo() != null)
-                .filter(it -> it.getBjdInfo().getLocation() != null)
+        // DTO 변환 (좌표 기준으로 그룹화된 데이터)
+        return groupedAuctions.entrySet().stream()
+                .map(entry -> {
+                    String[] coordinates = entry.getKey().split(",");
+                    double latitude = Double.parseDouble(coordinates[0]);
+                    double longitude = Double.parseDouble(coordinates[1]);
+
+                    return AuctionSummaryGroupedResponse.builder()
+                            .latitude(latitude)
+                            .longitude(longitude)
+                            .totalCount(entry.getValue().size())  // 해당 좌표의 경매 데이터 개수
+                            .auctions(entry.getValue())  // 해당 좌표에 속한 경매 리스트
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    public Auction getAuctionById(String id) {
+        return auctionRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Auction not found"));
+    }
+
+    public List<AuctionSummary> getInterestedAuctions(Member member) {
+        var auctionIds = interestRepository.findAllByMemberId(member.getId()).stream()
+                .map(Interest::getAuctionId)
                 .toList();
 
-        return AuctionResponse.from(result);
+        return auctionRepository.findAllByIdIn(auctionIds);
     }
 
-    // 좌표값이 null인지 확인하는 메서드
-    private void validateCoordinatesNotNull(Double... coordinates) {
-        if (Arrays.stream(coordinates).anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("좌표값은 null일 수 없습니다.");
-        }
-    }
-
-    // 위도값이 올바른 범위(-90 ~ 90)인지 확인하는 메서드
-    private void validateLatitudeRange(Double... latitudes) {
-        for (Double lat : latitudes) {
-            if (lat < -90 || lat > 90) {
-                throw new IllegalArgumentException(
-                        String.format("위도는 -90도에서 90도 사이여야 합니다. 현재 값: %f", lat)
-                );
-            }
-        }
-    }
-
-    // 경도값이 올바른 범위(-180 ~ 180)인지 확인하는 메서드
-    private void validateLongitudeRange(Double... longitudes) {
-        for (Double lng : longitudes) {
-            if (lng < -180 || lng > 180) {
-                throw new IllegalArgumentException(
-                        String.format("경도는 -180도에서 180도 사이여야 합니다. 현재 값: %f", lng)
-                );
-            }
-        }
+    @Transactional
+    public void interestAuction(Member member, String id) {
+        interestRepository.save(Interest.builder()
+                .member(member)
+                .auctionId(id)
+                .build());
     }
 }

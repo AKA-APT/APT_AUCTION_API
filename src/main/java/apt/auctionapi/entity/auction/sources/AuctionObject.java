@@ -1,4 +1,4 @@
-package apt.auctionapi.entity.auction_entity;
+package apt.auctionapi.entity.auction.sources;
 
 import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Field;

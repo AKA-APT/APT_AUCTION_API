@@ -1,9 +1,8 @@
 package apt.auctionapi.service;
 
-import apt.auctionapi.controller.dto.response.AuctionResponse;
 import apt.auctionapi.controller.dto.request.CreateTenderRequest;
 import apt.auctionapi.controller.dto.response.TenderResponse;
-import apt.auctionapi.entity.Auction;
+import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
 import apt.auctionapi.repository.AuctionRepository;
@@ -12,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +26,10 @@ public class TenderService {
     public void createTender(Member member, CreateTenderRequest request) {
         Auction auction = auctionRepository.findById(request.auctionId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 매물입니다 " + request.auctionId()));
+        BigDecimal biddingPrice = auction.getLatestBiddingPrice();
+        if (request.amount() < biddingPrice.longValue()) {
+            throw new IllegalArgumentException("최저 입찰가보다 낮은 금액으로 입찰할 수 없습니다");
+        }
         tenderRepository.save(
                 Tender.builder()
                         .auctionId(auction.getId())
@@ -45,7 +49,7 @@ public class TenderService {
             result.add(
                     new TenderResponse(
                             auction.getId(),
-                            AuctionResponse.from(auction),
+                            auction,
                             tender.getAmount()
                     )
             );

@@ -1,11 +1,12 @@
-package apt.auctionapi.entity;
+package apt.auctionapi.entity.auction;
 
-import apt.auctionapi.entity.auction_entity.*;
+import apt.auctionapi.entity.auction.sources.*;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
  */
 @Getter
 @Document(collection = "detail_auctions")
-public class AuctionEntity {
+public class Auction {
 
     /**
      * MongoDB 문서의 고유 ID
@@ -95,4 +96,23 @@ public class AuctionEntity {
      */
     @Field("aroundDspslStats")
     private List<AroundDisposalStatistics> aroundDisposalStats;
+
+    /**
+     * 현재 입찰가를 반환
+     */
+    public BigDecimal getLatestBiddingPrice() {
+        if(disposalGoodsExecutionInfo.getFourthAuctionTime() != null) {
+            return disposalGoodsExecutionInfo.getFourthAuctionPrice();
+        }
+        if(disposalGoodsExecutionInfo.getThirdAuctionTime() != null) {
+            return disposalGoodsExecutionInfo.getThirdAuctionPrice();
+        }
+        if(disposalGoodsExecutionInfo.getSecondAuctionTime() != null) {
+            return disposalGoodsExecutionInfo.getSecondAuctionPrice();
+        }
+        if(disposalGoodsExecutionInfo.getFirstAuctionTime() != null) {
+            return disposalGoodsExecutionInfo.getFirstAuctionPrice();
+        }
+        return disposalGoodsExecutionInfo.getAppraisedValue();
+    }
 }

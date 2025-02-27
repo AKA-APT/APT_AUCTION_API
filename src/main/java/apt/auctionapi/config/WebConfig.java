@@ -43,6 +43,6 @@ public class WebConfig implements WebMvcConfigurer {
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true); // 1시간 동안 preflight 결과를 캐시
+                .allowCredentials(true);
     }
 }

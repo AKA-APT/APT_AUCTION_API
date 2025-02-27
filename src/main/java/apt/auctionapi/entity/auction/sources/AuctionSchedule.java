@@ -1,4 +1,4 @@
-package apt.auctionapi.entity.auction_entity;
+package apt.auctionapi.entity.auction.sources;
 
 import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -6,10 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 
 /**
  * 경매 일정 정보 (Auction Schedule)

@@ -2,8 +2,9 @@ package apt.auctionapi.controller.dto.response;
 
 import java.util.List;
 
-import apt.auctionapi.entity.auction_entity.AuctionObject;
-import apt.auctionapi.entity.auction_entity.CaseBaseInfo;
+import apt.auctionapi.entity.auction.AuctionSummary;
+import apt.auctionapi.entity.auction.sources.AuctionObject;
+import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
 import lombok.Builder;
 
 @Builder
@@ -20,5 +21,12 @@ public record AuctionSummaryGroupedResponse(
         CaseBaseInfo caseBaseInfo,  // 사건 기본 정보
         AuctionObject auctionObject  // 경매 대상 물건 정보
     ) {
+        public static InnerAuctionSummaryResponse from(AuctionSummary auctionSummary) {
+            return InnerAuctionSummaryResponse.builder()
+                    .id(auctionSummary.getId())
+                    .caseBaseInfo(auctionSummary.getCaseBaseInfo())
+                    .auctionObject(auctionSummary.getAuctionObject())
+                    .build();
+        }
     }
 }

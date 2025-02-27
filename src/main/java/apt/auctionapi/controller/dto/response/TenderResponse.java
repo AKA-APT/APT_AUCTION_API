@@ -1,8 +1,10 @@
 package apt.auctionapi.controller.dto.response;
 
+import apt.auctionapi.entity.auction.Auction;
+
 public record TenderResponse(
         String auctionId,
-        AuctionResponse auction,
+        Auction auction,
         Long tenderCost
 ) {
 }

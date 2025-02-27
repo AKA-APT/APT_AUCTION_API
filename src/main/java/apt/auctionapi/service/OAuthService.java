@@ -11,15 +11,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import static apt.auctionapi.entity.OAuthProvider.KAKAO;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class OAuthService {
 
     private final KakaoOAuthConfig kakaoOAuthConfig;
@@ -27,6 +29,7 @@ public class OAuthService {
     private final RestTemplate restTemplate;
     private final HttpSession httpSession;
 
+    @Transactional
     public SessionUser kakaoLogin(String code) {
         String accessToken = getKakaoAccessToken(code);
         KakaoUserInfo userInfo = getKakaoUserInfo(accessToken);
@@ -57,11 +60,12 @@ public class OAuthService {
                 OAuthTokenDto.class
         );
 
-        if (response.getBody() == null) {
+        OAuthTokenDto body = response.getBody();
+        if (body == null) {
             throw new IllegalStateException("Failed to get access token from Kakao");
         }
 
-        return response.getBody().access_token();
+        return body.access_token();
     }
 
     private KakaoUserInfo getKakaoUserInfo(String accessToken) {
@@ -84,7 +88,7 @@ public class OAuthService {
         return response.getBody();
     }
 
-    private Member saveOrUpdate(KakaoUserInfo userInfo) {
+    protected Member saveOrUpdate(KakaoUserInfo userInfo) {
         Member member = memberRepository.findByProviderId(String.valueOf(userInfo.id()))
                 .map(entity -> {
                     entity.updateProfile(
