@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: DEPLOY-RUNNER
 
     steps:
       - name: change permission
