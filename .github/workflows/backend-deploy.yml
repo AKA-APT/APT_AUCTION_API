@@ -51,7 +51,7 @@ jobs:
       - name: Check application health
         run: |
           echo "Waiting for application to start..."
-          sleep 50
+          sleep 35
           if curl -f http://localhost:8080/actuator/health; then
             echo "Application is healthy"
           else
