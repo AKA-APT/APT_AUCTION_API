@@ -8,12 +8,12 @@ on:
 
 jobs:
   deploy:
-    runs-on: DEPLOY-RUNNER
+    runs-on: self-hosted
 
     steps:
       - name: change permission
         run: |
-          sudo chown -R ubuntu:ubuntu /home/ubuntu/backend-actions-runner/_work/APT_AUCTION_API 
+          sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/APT_AUCTION_API 
 
       - uses: actions/checkout@v3
 
@@ -51,7 +51,7 @@ jobs:
       - name: Check application health
         run: |
           echo "Waiting for application to start..."
-          sleep 30
+          sleep 50
           if curl -f http://localhost:8080/actuator/health; then
             echo "Application is healthy"
           else
