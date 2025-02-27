@@ -8,7 +8,9 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - backend
 
     steps:
       - name: change permission
