@@ -4,14 +4,17 @@ import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse;
 import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
+import apt.auctionapi.entity.Tender;
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.repository.AuctionRepository;
 import apt.auctionapi.repository.InterestRepository;
+import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,22 +31,44 @@ public class AuctionService {
 
     private final AuctionRepository auctionRepository;
     private final InterestRepository interestRepository;
+    private final TenderRepository tenderRepository;
 
     public List<AuctionSummaryGroupedResponse> getAuctionsByLocationRange(
             double lbLat,
             double lbLng,
             double rtLat,
-            double rtLng
+            double rtLng,
+            Member member
     ) {
         // DB에서 좌표 범위 내의 경매 데이터를 조회
         List<AuctionSummary> auctionSummaries = auctionRepository.findByLocationRange(lbLat, lbLng, rtLat, rtLng);
+        if (member == null) {
+            return getAuctionSummaryGroupedResponses(auctionSummaries, null, Collections.emptyList(), Collections.emptyList());
+        }
+        List<Interest> interests = interestRepository.findAllByMemberId(member.getId());
+        List<Tender> tenders = tenderRepository.findAllByMemberId(member.getId());
 
-        // 같은 좌표(lat, lng)를 기준으로 그룹화
+        return getAuctionSummaryGroupedResponses(auctionSummaries, member, interests, tenders);
+    }
+
+    private List<AuctionSummaryGroupedResponse> getAuctionSummaryGroupedResponses(
+            List<AuctionSummary> auctionSummaries,
+            Member member,
+            List<Interest> interests,
+            List<Tender> tenders
+    ) {
         Map<String, List<InnerAuctionSummaryResponse>> groupedAuctions = auctionSummaries.stream()
                 .filter(auction -> auction.getAuctionObject() != null)  // Null 체크
                 .collect(Collectors.groupingBy(
                         auction -> auction.getAuctionObject().getLatitude() + "," + auction.getAuctionObject().getLongitude(),
-                        Collectors.mapping(InnerAuctionSummaryResponse::from, Collectors.toList())
+                        Collectors.mapping(
+                                auction -> InnerAuctionSummaryResponse.of(
+                                        auction,
+                                        isInterestedAuction(member, auction, interests),
+                                        isTenderedAuction(member, auction, tenders)
+                                ),
+                                Collectors.toList()
+                        )
                 ));
 
         // DTO 변환 (좌표 기준으로 그룹화된 데이터)
@@ -61,6 +86,16 @@ public class AuctionService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    private Boolean isInterestedAuction(Member member, AuctionSummary auction, List<Interest> interests) {
+        if (member != null) return false;
+        return interests.stream().map(Interest::getAuctionId).anyMatch(it -> it.equals(auction.getId()));
+    }
+
+    private Boolean isTenderedAuction(Member member, AuctionSummary auction, List<Tender> tenders) {
+        if (member != null) return false;
+        return tenders.stream().map(Tender::getAuctionId).anyMatch(it -> it.equals(auction.getId()));
     }
 
     public Auction getAuctionById(String id) {

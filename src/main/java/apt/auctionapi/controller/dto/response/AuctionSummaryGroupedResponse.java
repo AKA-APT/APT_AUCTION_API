@@ -19,13 +19,21 @@ public record AuctionSummaryGroupedResponse(
     public record InnerAuctionSummaryResponse(
         String id,  // 문서 ID
         CaseBaseInfo caseBaseInfo,  // 사건 기본 정보
-        AuctionObject auctionObject  // 경매 대상 물건 정보
+        AuctionObject auctionObject,  // 경매 대상 물건 정보
+        boolean isInterested,  // 사용자가 좋아요한 경매인지 여부
+        boolean isBidding // 사용자가 입찰한 물건인지 여부
     ) {
-        public static InnerAuctionSummaryResponse from(AuctionSummary auctionSummary) {
+        public static InnerAuctionSummaryResponse of(
+                AuctionSummary auctionSummary,
+                boolean isInterested,
+                boolean isBidding
+        ) {
             return InnerAuctionSummaryResponse.builder()
                     .id(auctionSummary.getId())
                     .caseBaseInfo(auctionSummary.getCaseBaseInfo())
                     .auctionObject(auctionSummary.getAuctionObject())
+                    .isInterested(isInterested)
+                    .isBidding(isBidding)
                     .build();
         }
     }

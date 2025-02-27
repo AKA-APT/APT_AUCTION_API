@@ -33,10 +33,11 @@ public class AuctionController {
             @Schema(description = "우측 상단 위도", example = "37.5913546")
             @RequestParam double rtLat,
             @Schema(description = "우측 상단 경도", example = "126.7060359")
-            @RequestParam double rtLng
+            @RequestParam double rtLng,
+            @AuthMember(required = false) Member member
     ) {
         return ResponseEntity.ok(
-                auctionService.getAuctionsByLocationRange(lbLat, lbLng, rtLat, rtLng)
+                auctionService.getAuctionsByLocationRange(lbLat, lbLng, rtLat, rtLng, member)
         );
     }
 
