@@ -14,7 +14,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://3.35.222.245:27017/apt?authSource=admin
+      uri:  ${MONGO_URL} # 프론트 개발 편의를 위해 서버 db로 설정
 
   session:
     jdbc:
