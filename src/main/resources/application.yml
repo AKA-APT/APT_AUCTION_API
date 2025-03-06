@@ -12,11 +12,6 @@ spring:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
 
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/apt
-      database: apt
-
   session:
     store-type: jdbc
     jdbc:
