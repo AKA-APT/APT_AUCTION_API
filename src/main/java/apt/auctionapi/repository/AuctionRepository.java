@@ -20,11 +20,11 @@ import apt.auctionapi.entity.auction.AuctionSummary;
 public interface AuctionRepository extends MongoRepository<Auction, String> {
 
     @Aggregation(pipeline = {
-        "{ $unwind: '$gdsDspslObjctLst' }",  // 배열을 개별 문서로 변환
+        "{ $unwind: '$gdsDspslObjctLst' }",
         """
             { $match: { \
-            'gdsDspslObjctLst.stYcrd': { $gte: ?0, $lte: ?2 }, \
-            'gdsDspslObjctLst.stXcrd': { $gte: ?1, $lte: ?3 } \
+            'gdsDspslObjctLst.location': { \
+            $geoWithin: { $box: [ [?1, ?0], [?3, ?2] ] } } \
             } }""",
         """
             { $project: { \
