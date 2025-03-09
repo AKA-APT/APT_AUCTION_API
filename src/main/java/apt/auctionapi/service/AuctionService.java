@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -112,9 +113,15 @@ public class AuctionService {
 
     @Transactional
     public void interestAuction(Member member, String id) {
-        interestRepository.save(Interest.builder()
+        Optional<Interest> existingInterest = interestRepository.findByMemberAndAuctionId(member, id);
+
+        if (existingInterest.isPresent()) {
+            interestRepository.delete(existingInterest.get()); // 이미 존재하면 삭제
+        } else {
+            interestRepository.save(Interest.builder()
                 .member(member)
                 .auctionId(id)
-                .build());
+                .build()); // 존재하지 않으면 추가
+        }
     }
 }

@@ -48,7 +48,7 @@ public class AuctionController {
     }
 
     @Operation(summary = "좋아요", description = "사용자가 경매를 좋아요합니다.")
-    @GetMapping("/interests/{id}")
+    @PutMapping("/interests/{id}")
     public ResponseEntity<Void> interestAuction(
             @AuthMember Member member,
             @Schema(description = "경매 ID", example = "60f1b3b3b3b3b3b3b3b3b3b3")
