@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * 경매 진행 정보 (Disposal Goods Execution Info)
@@ -121,25 +122,25 @@ public class DisposalGoodsExecutionInfo {
      * 첫 번째 경매 진행 시간 (예: "10:00")
      */
     @Field("fstDspslHm")
-    private String firstAuctionTime;
+    private LocalTime firstAuctionTime;
 
     /**
      * 두 번째 경매 진행 시간 (예: null → 진행되지 않음)
      */
     @Field("scndDspslHm")
-    private String secondAuctionTime;
+    private LocalTime secondAuctionTime;
 
     /**
      * 세 번째 경매 진행 시간 (예: null → 진행되지 않음)
      */
     @Field("thrdDspslHm")
-    private String thirdAuctionTime;
+    private LocalTime thirdAuctionTime;
 
     /**
      * 네 번째 경매 진행 시간 (예: null → 진행되지 않음)
      */
     @Field("fothDspslHm")
-    private String fourthAuctionTime;
+    private LocalTime fourthAuctionTime;
 
     /**
      * 경매 결정 날짜 (예: "2025-03-06")

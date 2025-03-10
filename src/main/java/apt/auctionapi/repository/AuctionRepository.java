@@ -20,35 +20,39 @@ import apt.auctionapi.entity.auction.AuctionSummary;
 public interface AuctionRepository extends MongoRepository<Auction, String> {
 
     @Aggregation(pipeline = {
-        "{ $unwind: '$gdsDspslObjctLst' }",
         """
-            { $match: { \
-            'gdsDspslObjctLst.location': { \
-            $geoWithin: { $box: [ [?1, ?0], [?3, ?2] ] } } \
-            } }""",
+        { $project: {
+            'id': 1,
+            'caseBaseInfo': 1,
+            'auctionObject': { $arrayElemAt: ['$gdsDspslObjctLst', 0] }
+        } }
+        """,
         """
-            { $project: { \
-            'id': 1, \
-            'caseBaseInfo': 1, \
-            'auctionObject': '$gdsDspslObjctLst' \
-            } }"""
+        { $match: {
+            'auctionObject.location': {
+                $geoWithin: { $box: [ [?1, ?0], [?3, ?2] ] }
+            }
+        } }
+        """
     })
     List<AuctionSummary> findByLocationRange(double lbLat, double lbLng, double rtLat, double rtLng);
+
 
     Optional<Auction> findById(String id);
 
     @Aggregation(pipeline = {
-            """
-                { $match: { \
-                '_id': { $in: ?0 } \
-                } }""",
-            "{ $unwind: '$gdsDspslObjctLst' }",
-            """
-                { $project: { \
-                'id': 1, \
-                'caseBaseInfo': 1, \
-                'auctionObject': '$gdsDspslObjctLst' \
-                } }"""
+        """
+        { $match: {
+            '_id': { $in: ?0 }
+        } }
+        """,
+        """
+        { $project: {
+            'id': 1,
+            'caseBaseInfo': 1,
+            'auctionObject': { $arrayElemAt: ['$gdsDspslObjctLst', 0] }
+        } }
+        """
     })
     List<AuctionSummary> findAllByIdIn(List<String> ids);
 }
