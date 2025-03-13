@@ -76,6 +76,7 @@ jobs:
           script: |
             echo "Starting application..."
             mv /home/ubuntu/build/libs/auction-api.jar /home/ubuntu/auction-api.jar
+            rm -rf /home/ubuntu/build
             cd /home/ubuntu
             nohup java -jar auction-api.jar \
             --spring.profiles.active=prod \
