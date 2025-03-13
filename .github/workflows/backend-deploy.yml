@@ -75,6 +75,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             echo "Starting application..."
+            mv /home/ubuntu/build/libs/auction-api.jar /home/ubuntu/auction-api.jar
             cd /home/ubuntu
             nohup java -jar auction-api.jar \
             --spring.profiles.active=prod \
