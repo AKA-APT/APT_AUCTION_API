@@ -63,6 +63,10 @@ jobs:
             else
               echo "Port 8080 is free."
             fi
+            
+            echo "Remove existing jar file..."
+            sudo rm -f /home/ubuntu/auction-api.jar
+
         continue-on-error: true
 
       # 애플리케이션 시작
@@ -73,28 +77,19 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          envs: AWS_ACCESS_KEY,AWS_SECRET_KEY,AWS_REGION
+          environment: |
+            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            AWS_REGION=ap-northeast-2
           script: |
             echo "Starting application..."
             cd /home/ubuntu
             
-            # 스크립트 파일 생성
-            cat > start-app.sh << 'EOF'
-            #!/bin/bash
-            
-            # AWS 자격 증명 설정
-            export AWS_ACCESS_KEY_ID="${1}"
-            export AWS_SECRET_ACCESS_KEY="${2}"
-            export AWS_REGION="ap-northeast-2"
-            
-            # 애플리케이션 실행
-            java -jar /home/ubuntu/auction-api.jar --spring.profiles.active=prod > /home/ubuntu/auction-api.log 2>&1
-            EOF
-            
-            # 스크립트에 실행 권한 부여
-            chmod +x start-app.sh
-            
-            # 백그라운드에서 스크립트 실행
-            nohup sudo -E ./start-app.sh "${{ secrets.AWS_ACCESS_KEY }}" "${{ secrets.AWS_SECRET_KEY }}" > /dev/null 2>&1 &
+            nohup sudo -E bash -c 'AWS_ACCESS_KEY=$AWS_ACCESS_KEY AWS_SECRET_KEY=$AWS_SECRET_KEY AWS_REGION=$AWS_REGION java \
+            -jar /home/ubuntu/auction-api.jar \
+            --spring.profiles.active=prod \
+            > /home/ubuntu/auction-api.log 2>&1' &
             
             echo "Application started"
             sleep 35
