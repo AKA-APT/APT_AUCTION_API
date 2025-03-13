@@ -36,7 +36,8 @@ jobs:
           source: "build/libs/auction-api.jar"
           target: "/home/ubuntu"
 
-      - name: Deploy and restart application
+      # 프로세스 종료 단계를 별도로 분리하고 실패를 무시
+      - name: Stop existing application
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -44,35 +45,56 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 기존 프로세스 종료
+            echo "Checking for existing application process..."
             if pgrep -f "auction-api.jar"; then
               echo "Stopping existing application..."
-              pkill -f "auction-api.jar"
-              sleep 5
+              pkill -f "auction-api.jar" || echo "Failed to kill process, but continuing..."
+              echo "Waiting for process to terminate..."
+              sleep 10
+            else
+              echo "No existing application process found."
             fi
             
-            # 애플리케이션 실행
+            echo "Checking if port 8080 is in use..."
+            if lsof -i :8080; then
+              echo "Force killing process on port 8080..."
+              fuser -k 8080/tcp || echo "Failed to kill process on port 8080, but continuing..."
+              sleep 5
+            else
+              echo "Port 8080 is free."
+            fi
+        continue-on-error: true  # 이 단계가 실패해도 계속 진행
+
+      # 애플리케이션 시작 단계를 별도로 분리
+      - name: Start application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
             echo "Starting application..."
-            nohup java -jar /home/ubuntu/auction-api.jar \
+            cd /home/ubuntu
+            nohup java -jar auction-api.jar \
             --spring.profiles.active=prod \
             -DAWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
             -DAWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
             -DAWS_REGION=ap-northeast-2 \
             > /home/ubuntu/auction-api.log 2>&1 &
             
-            # 애플리케이션 시작 대기
-            echo "Waiting for application to start..."
+            echo "Application started"
             sleep 35
             
-            # 상태 확인
+            echo "Checking application health..."
             if curl -f http://localhost:8080/actuator/health; then
               echo "Application is healthy"
             else
               echo "Application failed to start"
+              echo "Logs:"
               tail -n 100 /home/ubuntu/auction-api.log
               exit 1
             fi
             
-            # 로그 확인
             echo "Recent application logs:"
             tail -n 100 /home/ubuntu/auction-api.log
