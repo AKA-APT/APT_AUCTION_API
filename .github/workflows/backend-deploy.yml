@@ -36,7 +36,7 @@ jobs:
           source: "build/libs/auction-api.jar"
           target: "/home/ubuntu"
 
-      # 프로세스 종료 단계를 별도로 분리하고 실패를 무시
+      # 프로세스 종료 단계
       - name: Stop existing application
         uses: appleboy/ssh-action@master
         with:
@@ -63,9 +63,9 @@ jobs:
             else
               echo "Port 8080 is free."
             fi
-        continue-on-error: true  # 이 단계가 실패해도 계속 진행
+        continue-on-error: true
 
-      # 애플리케이션 시작 단계를 별도로 분리
+      # AWS 환경 변수를 설정하고 애플리케이션 시작
       - name: Start application
         uses: appleboy/ssh-action@master
         with:
@@ -75,14 +75,17 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             echo "Starting application..."
-            mv /home/ubuntu/build/libs/auction-api.jar /home/ubuntu/auction-api.jar
-            rm -rf /home/ubuntu/build
             cd /home/ubuntu
+            
+            # AWS 자격 증명 설정
+            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
+            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_KEY }}
+            export AWS_REGION=ap-northeast-2
+            
+            # 애플리케이션 시작
             nohup java -jar auction-api.jar \
             --spring.profiles.active=prod \
-            -DAWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
-            -DAWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
-            -DAWS_REGION=ap-northeast-2 \
+            --spring.config.import=optional:aws-parameterstore:/ \
             > /home/ubuntu/auction-api.log 2>&1 &
             
             echo "Application started"
