@@ -48,7 +48,7 @@ jobs:
             echo "Checking for existing application process..."
             if pgrep -f "auction-api.jar"; then
               echo "Stopping existing application..."
-              pkill -f "auction-api.jar" || echo "Failed to kill process, but continuing..."
+              sudo pkill -f "auction-api.jar" || echo "Failed to kill process, but continuing..."
               echo "Waiting for process to terminate..."
               sleep 10
             else
@@ -56,16 +56,16 @@ jobs:
             fi
             
             echo "Checking if port 8080 is in use..."
-            if lsof -i :8080; then
+            if sudo lsof -i :8080; then
               echo "Force killing process on port 8080..."
-              fuser -k 8080/tcp || echo "Failed to kill process on port 8080, but continuing..."
+              sudo fuser -k 8080/tcp || echo "Failed to kill process on port 8080, but continuing..."
               sleep 5
             else
               echo "Port 8080 is free."
             fi
         continue-on-error: true
 
-      # AWS 환경 변수를 설정하고 애플리케이션 시작
+      # 애플리케이션 시작
       - name: Start application
         uses: appleboy/ssh-action@master
         with:
@@ -77,16 +77,11 @@ jobs:
             echo "Starting application..."
             cd /home/ubuntu
             
-            # AWS 자격 증명 설정
-            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
-            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_KEY }}
-            export AWS_REGION=ap-northeast-2
-            
-            # 애플리케이션 시작
-            nohup java -jar auction-api.jar \
+            # 환경 변수를 전달하면서 애플리케이션 실행
+            nohup sudo -E bash -c 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_KEY }} AWS_REGION=ap-northeast-2 java \
+            -jar /home/ubuntu/auction-api.jar \
             --spring.profiles.active=prod \
-            --spring.config.import=optional:aws-parameterstore:/ \
-            > /home/ubuntu/auction-api.log 2>&1 &
+            > /home/ubuntu/auction-api.log 2>&1' &
             
             echo "Application started"
             sleep 35
@@ -97,9 +92,9 @@ jobs:
             else
               echo "Application failed to start"
               echo "Logs:"
-              tail -n 100 /home/ubuntu/auction-api.log
+              sudo tail -n 100 /home/ubuntu/auction-api.log
               exit 1
             fi
             
             echo "Recent application logs:"
-            tail -n 100 /home/ubuntu/auction-api.log
+            sudo tail -n 100 /home/ubuntu/auction-api.log
