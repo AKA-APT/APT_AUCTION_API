@@ -1,6 +1,7 @@
 package apt.auctionapi.controller;
 
 import apt.auctionapi.auth.AuthMember;
+import apt.auctionapi.controller.dto.request.AuctionSearchRequest;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.auction.Auction;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,18 +28,11 @@ public class AuctionController {
     @Operation(summary = "경매 목록 조회", description = "지정한 범위 내의 경매 목록을 조회합니다.")
     @GetMapping
     public ResponseEntity<List<AuctionSummaryGroupedResponse>> getAuctionsByLocation(
-            @Schema(description = "좌측 하단 위도", example = "37.5808292")
-            @RequestParam double lbLat,
-            @Schema(description = "좌측 하단 경도", example = "126.6969164")
-            @RequestParam double lbLng,
-            @Schema(description = "우측 상단 위도", example = "37.5913546")
-            @RequestParam double rtLat,
-            @Schema(description = "우측 상단 경도", example = "126.7060359")
-            @RequestParam double rtLng,
+            @ParameterObject @ModelAttribute AuctionSearchRequest filter,
             @AuthMember(required = false) Member member
     ) {
         return ResponseEntity.ok(
-                auctionService.getAuctionsByLocationRange(lbLat, lbLng, rtLat, rtLng, member)
+                auctionService.getAuctionsByLocationRange(filter, member)
         );
     }
 
