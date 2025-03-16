@@ -113,7 +113,7 @@ public class AuctionStatusService {
         return switch (code) {
             case "03" -> "유찰";
             case "04" -> "낙찰";
-            default -> "알 수 없음";
+            default -> "신규";
         };
     }
 }
