@@ -95,7 +95,8 @@ public class AuctionStatusService {
                         Long auctionPrice = disposalItem.path("dspslAmt").asLong();
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
                         return new AuctionStatusResponse(auctionStatus, LocalDate.parse(auctionDate, formatter),
-                            auctionPrice);
+                            auctionPrice,
+                            "유찰".equals(auctionStatus) ? getRuptureCount(auction) + 1 : getRuptureCount(auction));
                     }
                 }
             }
@@ -115,5 +116,15 @@ public class AuctionStatusService {
             case "04" -> "낙찰";
             default -> "신규";
         };
+    }
+
+    private Integer getRuptureCount(Auction auction) {
+        if (auction == null || auction.getAuctionScheduleList() == null) {
+            return 0; // auction 또는 일정 리스트가 없으면 0 반환
+        }
+
+        return (int)auction.getAuctionScheduleList().stream()
+            .filter(schedule -> "002".equals(schedule.getAuctionResultCode())) // 유찰 코드 필터링
+            .count();
     }
 }
