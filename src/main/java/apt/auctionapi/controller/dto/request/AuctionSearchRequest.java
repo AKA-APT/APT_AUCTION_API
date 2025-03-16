@@ -2,12 +2,10 @@ package apt.auctionapi.controller.dto.request;
 
 import apt.auctionapi.domain.InvestmentTag;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public record AuctionSearchRequest(
         @Schema(description = "좌측 하단 위도", example = "37.5709061")
@@ -21,13 +19,6 @@ public record AuctionSearchRequest(
 
         @Schema(description = "우측 상단 경도", example = "126.738909")
         double rtLng,
-
-        @Schema(
-                description = "태그 필터 (쉼표로 구분) -> 갭투자,단기투자,아파트,오피스텔,상가,주택,토지",
-                allowableValues = {"갭투자", "단기투자", "아파트", "오피스텔", "상가", "주택", "토지"},
-                type = "array"
-        )
-        List<String> tags,
 
         @Schema(description = "최소낙찰가", example = "50000000")
         Long minBidPrice,
@@ -51,17 +42,9 @@ public record AuctionSearchRequest(
         if (failedBidCount == null) {
             failedBidCount = 0;
         }
-        if (tags == null) {
-            tags = Collections.emptyList();
-        }
         if (investmentTags == null) {
             investmentTags = Collections.emptyList();
         }
-    }
-
-    // 태그 문자열을 Enum 리스트로 변환
-    public List<AuctionTagFilter> getTagList() {
-        return AuctionTagFilter.listFromString(tags);
     }
 
     // 투자 유형 태그 이름 목록을 반환
@@ -85,44 +68,5 @@ public record AuctionSearchRequest(
                 })
                 .filter(Objects::nonNull)
                 .toList();
-    }
-
-    @Getter
-    public enum AuctionTagFilter {
-        GAP_INVESTMENT("갭투자"),
-        SHORT_TERM_INVESTMENT("단기투자"),
-        APARTMENT("아파트"),
-        OFFICETEL("오피스텔"),
-        COMMERCIAL_BUILDING("상가"),
-        HOUSE("주택"),
-        LAND("토지");
-
-        private final String displayName;
-
-        AuctionTagFilter(String displayName) {
-            this.displayName = displayName;
-        }
-
-        // 문자열로부터 Enum 값을 찾는 메서드
-        public static AuctionTagFilter fromString(String text) {
-            for (AuctionTagFilter tag : AuctionTagFilter.values()) {
-                if (tag.displayName.equalsIgnoreCase(text)) {
-                    return tag;
-                }
-            }
-            throw new IllegalArgumentException("Unknown tag: " + text);
-        }
-
-        public static List<AuctionTagFilter> listFromString(List<String> tags) {
-            if (tags == null || tags.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            return tags.stream()
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .map(AuctionTagFilter::fromString)
-                    .toList();
-        }
     }
 }

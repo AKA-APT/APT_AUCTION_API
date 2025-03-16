@@ -124,13 +124,7 @@ public class AuctionService {
 
         Criteria criteria = new Criteria().andOperator(locationCriteria);
 
-        // 태그 필터 적용 - Enum 사용
-        List<AuctionSearchRequest.AuctionTagFilter> tagList = filter.getTagList();
-        if (!tagList.isEmpty()) {
-            List<String> tagDisplayNames = tagList.stream().map(AuctionSearchRequest.AuctionTagFilter::getDisplayName).toList();
-            criteria.and("auctionObject.rletDvsDts").in(tagDisplayNames);
-        }
-
+        // 최소낙찰가 필터 적용
         if (filter.minBidPrice() != null) {
             criteria.and("auctionObject.aeeEvlAmt").gte(filter.minBidPrice());
         }

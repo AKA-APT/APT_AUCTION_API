@@ -3,6 +3,8 @@ package apt.auctionapi.controller;
 import apt.auctionapi.auth.AuthMember;
 import apt.auctionapi.controller.dto.request.AuctionSearchRequest;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
+import apt.auctionapi.controller.dto.response.InvestmentTagResponse;
+import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.AuctionSummary;
@@ -15,6 +17,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Tag(name = "경매", description = "경매 목록 조회 및 상세 조회 API")
@@ -59,5 +62,30 @@ public class AuctionController {
             @AuthMember Member member
     ) {
         return ResponseEntity.ok(auctionService.getInterestedAuctions(member));
+    }
+
+    @Operation(summary = "경매 투자 유형 태그 조회", description = "지정한 경매 ID에 해당하는 경매의 투자 유형 태그를 조회합니다.")
+    @GetMapping("/{id}/investment-tags")
+    public ResponseEntity<List<InvestmentTagResponse>> getAuctionInvestmentTags(
+            @Schema(description = "경매 ID", example = "60f1b3b3b3b3b3b3b3b3b3b3")
+            @PathVariable String id
+    ) {
+        List<InvestmentTag> tags = auctionService.getInvestmentTagsForAuction(id);
+
+        List<InvestmentTagResponse> response = tags.stream()
+                .map(tag -> new InvestmentTagResponse(tag.getId(), tag.getName(), tag.getDescription()))
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "모든 투자 유형 태그 조회", description = "시스템에서 사용 가능한 모든 투자 유형 태그를 조회합니다.")
+    @GetMapping("/investment-tags")
+    public ResponseEntity<List<InvestmentTagResponse>> getAllInvestmentTags() {
+        List<InvestmentTagResponse> response = Arrays.stream(InvestmentTag.values())
+                .map(tag -> new InvestmentTagResponse(tag.getId(), tag.getName(), tag.getDescription()))
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 }
