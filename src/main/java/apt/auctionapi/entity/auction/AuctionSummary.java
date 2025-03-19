@@ -26,7 +26,6 @@ public class AuctionSummary {
     /**
      * 사건 기본 정보 (법원, 사건 번호, 사건 종류 등)
      */
-    @Field("csBaseInfo")
     private CaseBaseInfo caseBaseInfo;
 
     /**

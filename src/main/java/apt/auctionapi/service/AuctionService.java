@@ -135,7 +135,7 @@ public class AuctionService {
     private Aggregation buildAggregation(Criteria criteria) {
         ProjectionOperation projectStage = Aggregation.project()
                 .and("id").as("id")
-                .and("caseBaseInfo").as("caseBaseInfo")
+                .and("csBaseInfo").as("caseBaseInfo")
                 .and(ArrayOperators.ArrayElemAt.arrayOf("gdsDspslObjctLst").elementAt(0))
                 .as("auctionObject");
 
