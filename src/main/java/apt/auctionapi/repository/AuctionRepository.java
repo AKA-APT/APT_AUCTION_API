@@ -19,40 +19,5 @@ import apt.auctionapi.entity.auction.AuctionSummary;
 @Repository
 public interface AuctionRepository extends MongoRepository<Auction, String> {
 
-    @Aggregation(pipeline = {
-        """
-        { $project: {
-            'id': 1,
-            'caseBaseInfo': 1,
-            'auctionObject': { $arrayElemAt: ['$gdsDspslObjctLst', 0] }
-        } }
-        """,
-        """
-        { $match: {
-            'auctionObject.location': {
-                $geoWithin: { $box: [ [?1, ?0], [?3, ?2] ] }
-            }
-        } }
-        """
-    })
-    List<AuctionSummary> findByLocationRange(double lbLat, double lbLng, double rtLat, double rtLng);
-
-
     Optional<Auction> findById(String id);
-
-    @Aggregation(pipeline = {
-        """
-        { $match: {
-            '_id': { $in: ?0 }
-        } }
-        """,
-        """
-        { $project: {
-            'id': 1,
-            'caseBaseInfo': 1,
-            'auctionObject': { $arrayElemAt: ['$gdsDspslObjctLst', 0] }
-        } }
-        """
-    })
-    List<AuctionSummary> findAllByIdIn(List<String> ids);
 }

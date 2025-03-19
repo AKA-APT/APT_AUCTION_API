@@ -1,5 +1,7 @@
 package apt.auctionapi.service;
 
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+
 import apt.auctionapi.controller.dto.request.AuctionSearchRequest;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse;
@@ -116,7 +118,7 @@ public class AuctionService {
     }
 
     private Criteria buildCriteria(AuctionSearchRequest filter) {
-        Criteria locationCriteria = Criteria.where("loc")
+        Criteria locationCriteria = where("loc")
                 .intersects(new GeoJsonPolygon(
                         new Point(filter.lbLng(), filter.lbLat()),  // 좌하단
                         new Point(filter.rtLng(), filter.lbLat()),  // 우하단
@@ -245,11 +247,24 @@ public class AuctionService {
     }
 
     public List<AuctionSummary> getInterestedAuctions(Member member) {
-        var auctionIds = interestRepository.findAllByMemberId(member.getId()).stream()
-                .map(Interest::getAuctionId)
-                .toList();
+        List<String> auctionIds = interestRepository.findAllByMemberId(member.getId()).stream()
+            .map(Interest::getAuctionId)
+            .toList();
 
-        return auctionRepository.findAllByIdIn(auctionIds);
+        if (auctionIds.isEmpty()) {
+            return List.of();
+        }
+
+        Aggregation aggregation = Aggregation.newAggregation(
+            Aggregation.match(where("_id").in(auctionIds)),
+            Aggregation.project()
+                .andInclude("id")
+                .and("csBaseInfo").as("caseBaseInfo")  // 필드명 변경
+                .and("gdsDspslObjctLst").arrayElementAt(0).as("auctionObject") // 배열 필드 변환
+        );
+
+        AggregationResults<AuctionSummary> results = mongoTemplate.aggregate(aggregation, "auctionCollection", AuctionSummary.class);
+        return results.getMappedResults();
     }
 
     @Transactional
