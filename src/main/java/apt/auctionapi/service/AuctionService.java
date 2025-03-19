@@ -129,7 +129,7 @@ public class AuctionService {
 
         // 최소낙찰가 필터 적용
         if (filter.minBidPrice() != null) {
-            criteria.and("auctionObject.aeeEvlAmt").gte(filter.minBidPrice());
+            criteria.and("minBidPrice").gte(filter.minBidPrice());
         }
 
         return criteria;
@@ -140,6 +140,7 @@ public class AuctionService {
                 .and("id").as("id")
                 .and("csBaseInfo").as("caseBaseInfo")
                 .and("loc").as("loc")
+                .and("dspslGdsDxdyInfo.fstPbancLwsDspslPrc").as("minBidPrice")
                 .and(ArrayOperators.ArrayElemAt.arrayOf("gdsDspslObjctLst").elementAt(0))
                 .as("auctionObject");
 
