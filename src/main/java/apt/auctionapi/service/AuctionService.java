@@ -13,10 +13,10 @@ import apt.auctionapi.repository.AuctionRepository;
 import apt.auctionapi.repository.InterestRepository;
 import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,10 +116,13 @@ public class AuctionService {
     }
 
     private Criteria buildCriteria(AuctionSearchRequest filter) {
-        Criteria locationCriteria = Criteria.where("auctionObject.location")
-                .within(new Box(
-                        new Point(filter.lbLng(), filter.lbLat()),
-                        new Point(filter.rtLng(), filter.rtLat())
+        Criteria locationCriteria = Criteria.where("loc")
+                .intersects(new GeoJsonPolygon(
+                        new Point(filter.lbLng(), filter.lbLat()),  // 좌하단
+                        new Point(filter.rtLng(), filter.lbLat()),  // 우하단
+                        new Point(filter.rtLng(), filter.rtLat()),  // 우상단
+                        new Point(filter.lbLng(), filter.rtLat()),  // 좌상단
+                        new Point(filter.lbLng(), filter.lbLat())   // 다각형 닫기
                 ));
 
         Criteria criteria = new Criteria().andOperator(locationCriteria);
@@ -136,6 +139,7 @@ public class AuctionService {
         ProjectionOperation projectStage = Aggregation.project()
                 .and("id").as("id")
                 .and("csBaseInfo").as("caseBaseInfo")
+                .and("loc").as("loc")
                 .and(ArrayOperators.ArrayElemAt.arrayOf("gdsDspslObjctLst").elementAt(0))
                 .as("auctionObject");
 
