@@ -3,6 +3,7 @@ package apt.auctionapi.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,7 @@ public class InvestmentTagController {
 
     InvestmentTagService investmentTagService;
 
-    @Operation(summary = "경매 투자 유형 태그 추가", description = "사용자가 특정 경매에 투자 유형 태그를 추가합니다.")
+    @Operation(summary = "개인 투자 유형 태그 추가", description = "현재 로그인한 사용자의 투자 유형 태그 목록을 추가합니다.")
     @PutMapping
     public ResponseEntity<List<InvestmentTagResponse>> updateAuctionInvestmentTags(
         @AuthMember Member member,
@@ -39,4 +40,17 @@ public class InvestmentTagController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "개인 투자 유형 태그 조회", description = "현재 로그인한 사용자의 투자 유형 태그 목록을 조회합니다.")
+    @GetMapping
+    public ResponseEntity<List<InvestmentTagResponse>> getMemberInvestmentTags(@AuthMember Member member) {
+        List<InvestmentTag> investmentTags = investmentTagService.getInvestmentTagsForMember(member);
+
+        List<InvestmentTagResponse> response = investmentTags.stream()
+            .map(tag -> new InvestmentTagResponse(tag.getId(), tag.getName(), tag.getDescription()))
+            .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
 }

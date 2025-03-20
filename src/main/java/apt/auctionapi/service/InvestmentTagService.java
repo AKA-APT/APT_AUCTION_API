@@ -44,4 +44,17 @@ public class InvestmentTagService {
 
         return investmentTags;
     }
+
+    @Transactional(readOnly = true)
+    public List<InvestmentTag> getInvestmentTagsForMember(Member member) {
+        if (member == null) {
+            throw new SecurityException("Unauthorized user.");
+        }
+
+        List<Tag> tags = investmentTagRepository.findByMember(member);
+        return tags.stream()
+            .map(Tag::getTag)
+            .toList();
+    }
+
 }
