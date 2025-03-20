@@ -21,12 +21,12 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "경매", description = "경매 목록 조회 및 상세 조회 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/me/Investment-tags")
+@RequestMapping("/api/v2/me/investment-tags")
 public class InvestmentTagController {
 
     InvestmentTagService investmentTagService;
 
-    @Operation(summary = "개인 투자 유형 태그 추가", description = "현재 로그인한 사용자의 투자 유형 태그 목록을 추가합니다.")
+    @Operation(summary = "개인 투자 유형 태그 변경", description = "현재 로그인한 사용자의 투자 유형 태그 목록을 변경합니다.")
     @PutMapping
     public ResponseEntity<List<InvestmentTagResponse>> updateAuctionInvestmentTags(
         @AuthMember Member member,
