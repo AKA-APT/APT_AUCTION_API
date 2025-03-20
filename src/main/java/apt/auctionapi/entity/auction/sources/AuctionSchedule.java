@@ -35,10 +35,22 @@ public class AuctionSchedule {
     private String auctionPlace;
 
     /**
+     * 경매 종류 코드 (예: "002" → 유찰)
+     */
+    @Field("auctnDxdyKndCd")
+    private String auctionKindCode;
+
+    /**
      * 경매 결과 코드 (예: "002" → 유찰)
      */
     @Field("auctnDxdyRsltCd")
     private String auctionResultCode;
+
+    /**
+     * 경매 상태 코드 (예: "002" → 유찰)
+     */
+    @Field("auctnDxdyGdsStatCd")
+    private String auctionGoodsStatusCode;
 
     /**
      * 총 감정 평가 금액 (예: 2,382,979,600원)
