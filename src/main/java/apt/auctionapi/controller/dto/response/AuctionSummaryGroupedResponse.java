@@ -32,8 +32,8 @@ public record AuctionSummaryGroupedResponse(
                 boolean isBidding,
                 List<InvestmentTag> investmentTags
         ) {
-            auctionSummary.getAuctionObject().setLatitude(auctionSummary.getLocation().getX());
-            auctionSummary.getAuctionObject().setLongitude(auctionSummary.getLocation().getY());
+            auctionSummary.getAuctionObject().setLatitude(auctionSummary.getLocation().getY());
+            auctionSummary.getAuctionObject().setLongitude(auctionSummary.getLocation().getX());
             return InnerAuctionSummaryResponse.builder()
                     .id(auctionSummary.getId())
                     .caseBaseInfo(auctionSummary.getCaseBaseInfo())

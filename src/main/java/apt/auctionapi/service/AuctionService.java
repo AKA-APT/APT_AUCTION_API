@@ -220,7 +220,7 @@ public class AuctionService {
         Map<String, List<InnerAuctionSummaryResponse>> groupedAuctions = auctionSummaries.stream()
                 .filter(auction -> auction.getLocation() != null)  // Null 체크
                 .collect(Collectors.groupingBy(
-                        auction -> auction.getLocation().getX() + "," + auction.getLocation().getY(),
+                        auction -> auction.getLocation().getY() + "," + auction.getLocation().getX(),
                         Collectors.mapping(
                                 auction -> {
                                     // Auction 객체에서 투자 유형 태그 목록 가져오기
