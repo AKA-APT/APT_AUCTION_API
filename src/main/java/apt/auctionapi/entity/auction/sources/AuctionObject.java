@@ -1,6 +1,7 @@
 package apt.auctionapi.entity.auction.sources;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
@@ -55,6 +56,18 @@ public class AuctionObject {
      */
     @Field("lclDspslGdsLstUsgCd")
     private String landUseCode;
+
+    /**
+     * 경매 대상 물건의 위도 (예: 38.379562564914785)
+     */
+    @Setter
+    private Double latitude;
+
+    /**
+     * 경매 대상 물건의 경도 (예: 128.18470890620853)
+     */
+    @Setter
+    private Double longitude;
 
     /**
      * 물건의 주소 (예: "서울특별시 관악구 신림동 569-16")

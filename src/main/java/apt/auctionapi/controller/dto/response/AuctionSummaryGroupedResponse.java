@@ -27,20 +27,6 @@ public record AuctionSummaryGroupedResponse(
             boolean isBidding, // 사용자가 입찰한 물건인지 여부
             List<InvestmentTagResponse> investmentTags // 투자 유형 태그 목록
     ) {
-        public static InnerAuctionSummaryResponse of(
-                AuctionSummary auctionSummary,
-                boolean isInterested,
-                boolean isBidding
-        ) {
-            return InnerAuctionSummaryResponse.builder()
-                    .id(auctionSummary.getId())
-                    .caseBaseInfo(auctionSummary.getCaseBaseInfo())
-                    .auctionObject(auctionSummary.getAuctionObject())
-                    .isInterested(isInterested)
-                    .isBidding(isBidding)
-                    .investmentTags(List.of()) // 빈 리스트로 초기화
-                    .build();
-        }
 
         public static InnerAuctionSummaryResponse of(
                 AuctionSummary auctionSummary,
@@ -48,11 +34,12 @@ public record AuctionSummaryGroupedResponse(
                 boolean isBidding,
                 List<InvestmentTag> investmentTags
         ) {
+            auctionSummary.getAuctionObject().setLatitude(auctionSummary.getLocation().getX());
+            auctionSummary.getAuctionObject().setLongitude(auctionSummary.getLocation().getY());
             return InnerAuctionSummaryResponse.builder()
                     .id(auctionSummary.getId())
                     .caseBaseInfo(auctionSummary.getCaseBaseInfo())
                     .auctionObject(auctionSummary.getAuctionObject())
-                    .location(auctionSummary.getLocation())
                     .isInterested(isInterested)
                     .isBidding(isBidding)
                     .investmentTags(investmentTags.stream()
