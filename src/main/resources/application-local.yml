@@ -14,7 +14,7 @@ spring:
 
   data:
     mongodb:
-      uri:  ${MONGO_URL} # 프론트 개발 편의를 위해 서버 db로 설정
+      uri:  mongodb://localhost:27017/apt
 
   session:
     jdbc:
