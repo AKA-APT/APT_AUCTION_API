@@ -5,7 +5,6 @@ import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.entity.auction.sources.AuctionObject;
 import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
 import lombok.Builder;
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import java.util.List;
 
@@ -22,7 +21,6 @@ public record AuctionSummaryGroupedResponse(
             String id,  // 문서 ID
             CaseBaseInfo caseBaseInfo,  // 사건 기본 정보
             AuctionObject auctionObject,  // 경매 대상 물건 정보
-            GeoJsonPoint location,
             boolean isInterested,  // 사용자가 좋아요한 경매인지 여부
             boolean isBidding, // 사용자가 입찰한 물건인지 여부
             List<InvestmentTagResponse> investmentTags // 투자 유형 태그 목록
