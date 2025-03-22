@@ -129,7 +129,7 @@ public class AuctionService {
     }
 
     private Criteria buildCriteria(AuctionSearchRequest filter) {
-        Criteria locationCriteria = where("loc")
+        Criteria locationCriteria = where("location")
             .intersects(new GeoJsonPolygon(
                 new Point(filter.lbLng(), filter.lbLat()),  // 좌하단
                 new Point(filter.rtLng(), filter.lbLat()),  // 우하단
@@ -152,7 +152,7 @@ public class AuctionService {
         ProjectionOperation projectStage = Aggregation.project()
             .and("id").as("id")
             .and("csBaseInfo").as("caseBaseInfo")
-            .and("loc").as("loc")
+            .and("location").as("location")
             .and("dspslGdsDxdyInfo.fstPbancLwsDspslPrc").as("minBidPrice")
             .and(ArrayOperators.ArrayElemAt.arrayOf("gdsDspslObjctLst").elementAt(0))
             .as("auctionObject");
@@ -167,7 +167,7 @@ public class AuctionService {
 
     private List<AuctionSummary> executeAggregation(Aggregation aggregation) {
         AggregationResults<AuctionSummary> results = mongoTemplate.aggregate(
-            aggregation, "detail_auctions", AuctionSummary.class);
+            aggregation, "auctions", AuctionSummary.class);
 
         return results.getMappedResults();
     }
@@ -198,9 +198,9 @@ public class AuctionService {
         List<Tender> tenders
     ) {
         Map<String, List<InnerAuctionSummaryResponse>> groupedAuctions = auctionSummaries.stream()
-            .filter(auction -> auction.getAuctionObject() != null)  // Null 체크
+            .filter(auction -> auction.getLocation() != null)  // Null 체크
             .collect(Collectors.groupingBy(
-                auction -> auction.getAuctionObject().getLatitude() + "," + auction.getAuctionObject().getLongitude(),
+                auction -> auction.getLocation().getX() + "," + auction.getLocation().getY(),
                 Collectors.mapping(
                     auction -> {
                         // Auction 객체에서 투자 유형 태그 목록 가져오기
@@ -276,7 +276,7 @@ public class AuctionService {
                 .and("gdsDspslObjctLst").arrayElementAt(0).as("auctionObject") // 배열 필드 변환
         );
 
-        AggregationResults<AuctionSummary> results = mongoTemplate.aggregate(aggregation, "detail_auctions",
+        AggregationResults<AuctionSummary> results = mongoTemplate.aggregate(aggregation, "auctions",
             AuctionSummary.class);
         return results.getMappedResults();
     }

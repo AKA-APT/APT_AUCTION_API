@@ -57,18 +57,6 @@ public class AuctionObject {
     private String landUseCode;
 
     /**
-     * 경매 대상 물건의 위도 (예: 38.379562564914785)
-     */
-    @Field("stYcrd")
-    private Double latitude;
-
-    /**
-     * 경매 대상 물건의 경도 (예: 128.18470890620853)
-     */
-    @Field("stXcrd")
-    private Double longitude;
-
-    /**
      * 물건의 주소 (예: "서울특별시 관악구 신림동 569-16")
      */
     @Field("userPrintSt")
