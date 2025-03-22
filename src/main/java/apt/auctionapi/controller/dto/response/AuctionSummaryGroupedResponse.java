@@ -4,7 +4,6 @@ import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.entity.auction.sources.AuctionObject;
 import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
-import apt.auctionapi.entity.auction.sources.Location;
 import lombok.Builder;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 

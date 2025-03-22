@@ -2,12 +2,10 @@ package apt.auctionapi.entity.auction;
 
 import apt.auctionapi.entity.auction.sources.AuctionObject;
 import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
-import apt.auctionapi.entity.auction.sources.Location;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * 경매 데이터 엔티티 요약 엔티티 (AuctionSummary Entity)
