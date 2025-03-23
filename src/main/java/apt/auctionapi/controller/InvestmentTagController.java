@@ -18,13 +18,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "경매", description = "경매 목록 조회 및 상세 조회 API")
+@Tag(name = "투자 유형 태그", description = "사용자 투자 유형 태그 조회 및 변경 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/me/investment-tags")
 public class InvestmentTagController {
 
-    InvestmentTagService investmentTagService;
+    private final InvestmentTagService investmentTagService;
 
     @Operation(summary = "개인 투자 유형 태그 변경", description = "현재 로그인한 사용자의 투자 유형 태그 목록을 변경합니다.")
     @PutMapping
