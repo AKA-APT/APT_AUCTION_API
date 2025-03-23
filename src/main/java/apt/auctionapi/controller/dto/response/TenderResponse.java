@@ -47,7 +47,7 @@ public record TenderResponse(
         @Schema(hidden = true)
         public static InnerAuctionStatusResponse from(Auction auction) {
             // 경매가 취소된 경우 우선 처리
-            if (auction.getIsAuctionCancelled()) {
+            if (Boolean.TRUE.equals(auction.getIsAuctionCancelled())) {
                 return new InnerAuctionStatusResponse(
                         "취소",
                         auction.getDisposalGoodsExecutionInfo().getAuctionDate(),
