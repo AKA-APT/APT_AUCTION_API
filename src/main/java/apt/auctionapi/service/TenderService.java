@@ -2,9 +2,10 @@ package apt.auctionapi.service;
 
 import apt.auctionapi.controller.dto.request.CreateTenderRequest;
 import apt.auctionapi.controller.dto.response.TenderResponse;
-import apt.auctionapi.entity.auction.Auction;
+import apt.auctionapi.controller.dto.response.TenderResponse.InnerAuctionStatusResponse;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
+import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.repository.AuctionRepository;
 import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,8 @@ public class TenderService {
                     new TenderResponse(
                             auction.getId(),
                             auction,
-                            tender.getAmount()
+                            tender.getAmount(),
+                            InnerAuctionStatusResponse.from(auction)
                     )
             );
         }

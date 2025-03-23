@@ -101,7 +101,14 @@ public class Auction {
     /**
      * 경매 대상 물건 위도/경도 좌표
      */
+    @Field("location")
     private GeoJsonPoint location;
+
+    /**
+     * 경매 취소/취하 여부 (취하되지 않았다면 null)
+     */
+    @Field("isAuctionCancelled")
+    private Boolean isAuctionCancelled;
 
     /**
      * 현재 입찰가를 반환
