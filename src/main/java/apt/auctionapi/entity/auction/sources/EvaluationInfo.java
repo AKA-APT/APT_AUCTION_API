@@ -1,6 +1,8 @@
 package apt.auctionapi.entity.auction.sources;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
@@ -36,11 +38,17 @@ public class EvaluationInfo {
     @Field("aeeWevlMnpntTbltDvsCd")
     private String evaluationCategoryCode;
 
+    @Setter
+    private String evaluationCategory;
+
     /**
      * 감정 평가 항목 코드 (예: "00083001")
      */
     @Field("aeeWevlMnpntItmCd")
     private String evaluationItemCode;
+
+    @Setter
+    private String evaluationItem;
 
     /**
      * 감정 평가 내용 (예: "본건은 서울특별시 관악구 신림동 소재 '서울조원초등학교' 남서측 인근에 위치하고 주변으로 단독주택, 공동주택, 주상용건물, 각종 상업용건물 등이 소재하는 지역으로 제반 입지여건은 보통시됨.")

@@ -1,6 +1,8 @@
 package apt.auctionapi.entity.auction.sources;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
@@ -40,17 +42,17 @@ public class AuctionSchedule {
     @Field("auctnDxdyKndCd")
     private String auctionKindCode;
 
+    @Setter
+    private String auctionKind;
+
     /**
      * 경매 결과 코드 (예: "002" → 유찰)
      */
     @Field("auctnDxdyRsltCd")
     private String auctionResultCode;
 
-    /**
-     * 경매 상태 코드 (예: "002" → 유찰)
-     */
-    @Field("auctnDxdyGdsStatCd")
-    private String auctionGoodsStatusCode;
+    @Setter
+    private String auctionResult;
 
     /**
      * 총 감정 평가 금액 (예: 2,382,979,600원)

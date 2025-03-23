@@ -1,12 +1,12 @@
 package apt.auctionapi.controller.dto.response;
 
+import java.util.List;
+
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.entity.auction.sources.AuctionObject;
 import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
 import lombok.Builder;
-
-import java.util.List;
 
 @Builder
 public record AuctionSummaryGroupedResponse(
