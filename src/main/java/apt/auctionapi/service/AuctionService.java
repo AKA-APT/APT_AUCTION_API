@@ -30,6 +30,7 @@ import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
 import apt.auctionapi.entity.auction.Auction;
+import apt.auctionapi.entity.auction.AuctionCodeMapper;
 import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.repository.AuctionRepository;
 import apt.auctionapi.repository.InterestRepository;
@@ -280,13 +281,17 @@ public class AuctionService {
             .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
         // 코드값 매핑
         auction.getAuctionScheduleList().forEach(auctionSchedule -> {
-            auctionSchedule.setAuctionKind(auctionSchedule.getAuctionKindCode());
-            auctionSchedule.setAuctionResult(auctionSchedule.getAuctionResultCode());
+            auctionSchedule.setAuctionKind(
+                AuctionCodeMapper.getAuctionKindDescription(auctionSchedule.getAuctionKindCode()));
+            auctionSchedule.setAuctionResult(
+                AuctionCodeMapper.getAuctionResultDescription(auctionSchedule.getAuctionResultCode()));
         });
         // 코드값 매핑
         auction.getEvaluationList().forEach(auctionEvaluation -> {
-            auctionEvaluation.setEvaluationCategory(auctionEvaluation.getEvaluationCategoryCode());
-            auctionEvaluation.setEvaluationItem(auctionEvaluation.getEvaluationItemCode());
+            auctionEvaluation.setEvaluationCategory(
+                AuctionCodeMapper.getEvaluationTableTypeDescription(auctionEvaluation.getEvaluationCategoryCode()));
+            auctionEvaluation.setEvaluationItem(
+                AuctionCodeMapper.getEvaluationItemDescription(auctionEvaluation.getEvaluationItemCode()));
         });
         return auction;
     }
@@ -328,12 +333,6 @@ public class AuctionService {
             .build()); // 존재하지 않으면 추가
     }
 
-    /**
-     * 경매 객체의 투자 유형 태그 목록을 반환합니다.
-     *
-     * @param auctionId 경매 ID
-     * @return 투자 유형 태그 목록
-     */
     public List<InvestmentTag> getInvestmentTagsForAuction(String auctionId) {
         Auction auction = auctionRepository.findById(auctionId)
             .orElseThrow(() -> new IllegalArgumentException("Auction not found"));

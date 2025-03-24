@@ -9,6 +9,7 @@ import java.util.Map;
  * 이 클래스는 경매 일정과 관련된 다양한 코드값의 매핑을 제공합니다.
  * 경매 종류, 결과, 상태 등의 코드에 대한 의미를 조회할 수 있습니다.
  */
+
 public class AuctionCodeMapper {
 
     private static final Map<String, String> AUCTION_KIND_MAP;
