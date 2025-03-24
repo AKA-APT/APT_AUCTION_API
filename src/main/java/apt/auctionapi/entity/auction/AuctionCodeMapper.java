@@ -78,43 +78,32 @@ public class AuctionCodeMapper {
         EVALUATION_TABLE_TYPE_MAP.put("00082007", "어업권감정평가요항표");
     }
 
-    /**
-     * 경매 종류 코드에 대한 설명을 반환합니다.
-     *
-     * @param kindCode 경매 종류 코드 (예: "01")
-     * @return 경매 종류 설명 (예: "매각기일")
-     */
     public static String getAuctionKindDescription(String kindCode) {
+        if (kindCode == null) {
+            return null;
+        }
         return AUCTION_KIND_MAP.getOrDefault(kindCode, "알 수 없는 경매 종류 코드: " + kindCode);
     }
 
-    /**
-     * 경매 결과 코드에 대한 설명을 반환합니다.
-     *
-     * @param resultCode 경매 결과 코드 (예: "002")
-     * @return 경매 결과 설명 (예: "유찰")
-     */
     public static String getAuctionResultDescription(String resultCode) {
+        if (resultCode == null) {
+            return null;
+        }
         return AUCTION_RESULT_MAP.getOrDefault(resultCode, "알 수 없는 경매 결과 코드: " + resultCode);
     }
 
-    /**
-     * 감정평가 요항 코드에 대한 설명을 반환합니다.
-     *
-     * @param itemCode 감정평가 요항 코드 (예: "00083001")
-     * @return 감정평가 요항 설명 (예: "위치 및 주위환경")
-     */
     public static String getEvaluationItemDescription(String itemCode) {
+        if (itemCode == null) {
+            return null;
+        }
         return EVALUATION_ITEM_MAP.getOrDefault(itemCode, "알 수 없는 감정평가 요항 코드: " + itemCode);
     }
 
-    /**
-     * 감정평가 테이블 유형 코드에 대한 설명을 반환합니다.
-     *
-     * @param tableTypeCode 감정평가 테이블 유형 코드 (예: "00082001")
-     * @return 감정평가 테이블 유형 설명 (예: "토지감정요항표")
-     */
     public static String getEvaluationTableTypeDescription(String tableTypeCode) {
+        if (tableTypeCode == null) {
+            return null;
+        }
         return EVALUATION_TABLE_TYPE_MAP.getOrDefault(tableTypeCode, "알 수 없는 감정평가 테이블 유형 코드: " + tableTypeCode);
     }
+
 }
