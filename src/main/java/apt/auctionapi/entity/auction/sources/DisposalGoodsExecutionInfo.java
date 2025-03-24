@@ -1,6 +1,8 @@
 package apt.auctionapi.entity.auction.sources;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
@@ -69,6 +71,9 @@ public class DisposalGoodsExecutionInfo {
      */
     @Field("auctnGdsUsgCd")
     private String auctionGoodsUsageCode;
+
+    @Setter
+    private String auctionGoodsUsage;
 
     /**
      * 해당 건물의 총 층 수 (예: 2층)

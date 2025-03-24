@@ -293,6 +293,10 @@ public class AuctionService {
             auctionEvaluation.setEvaluationItem(
                 AuctionCodeMapper.getEvaluationItemDescription(auctionEvaluation.getEvaluationItemCode()));
         });
+        // 코드값 매핑
+        String usageCode = auction.getDisposalGoodsExecutionInfo().getAuctionGoodsUsageCode();
+        auction.getDisposalGoodsExecutionInfo()
+            .setAuctionGoodsUsage(AuctionCodeMapper.getAuctionGoodsUsageDescription(usageCode));
         return auction;
     }
 

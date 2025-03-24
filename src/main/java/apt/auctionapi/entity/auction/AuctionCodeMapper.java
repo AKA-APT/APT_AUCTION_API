@@ -16,6 +16,7 @@ public class AuctionCodeMapper {
     private static final Map<String, String> AUCTION_RESULT_MAP;
     private static final Map<String, String> EVALUATION_ITEM_MAP;
     private static final Map<String, String> EVALUATION_TABLE_TYPE_MAP;
+    private static final Map<String, String> AUCTION_GOODS_USAGE_MAP;
 
     static {
         AUCTION_KIND_MAP = Map.of("01", "매각기일", "02", "매각결정기일", "03", "대금지급기한", "04", "대금지급및 배당기일", "05", "배당기일", "06",
@@ -76,6 +77,29 @@ public class AuctionCodeMapper {
         EVALUATION_TABLE_TYPE_MAP.put("00082005", "자동차감정평가요항표");
         EVALUATION_TABLE_TYPE_MAP.put("00082006", "임야감정평가요항표");
         EVALUATION_TABLE_TYPE_MAP.put("00082007", "어업권감정평가요항표");
+
+        // 경매 물건 용도 코드 매핑
+        AUCTION_GOODS_USAGE_MAP = new HashMap<>();
+        AUCTION_GOODS_USAGE_MAP.put("01", "아파트");
+        AUCTION_GOODS_USAGE_MAP.put("02", "단독주택,다가구주택");
+        AUCTION_GOODS_USAGE_MAP.put("03", "연립주택,다세대,빌라");
+        AUCTION_GOODS_USAGE_MAP.put("04", "자동차,중기");
+        AUCTION_GOODS_USAGE_MAP.put("05", "대지,임야,전답");
+        AUCTION_GOODS_USAGE_MAP.put("06", "상가,오피스텔,근린시설");
+        AUCTION_GOODS_USAGE_MAP.put("07", "대지");
+        AUCTION_GOODS_USAGE_MAP.put("08", "임야");
+        AUCTION_GOODS_USAGE_MAP.put("09", "전답");
+        AUCTION_GOODS_USAGE_MAP.put("10", "단독주택");
+        AUCTION_GOODS_USAGE_MAP.put("11", "다가구주택");
+        AUCTION_GOODS_USAGE_MAP.put("12", "연립주택");
+        AUCTION_GOODS_USAGE_MAP.put("13", "다세대");
+        AUCTION_GOODS_USAGE_MAP.put("14", "빌라");
+        AUCTION_GOODS_USAGE_MAP.put("15", "상가");
+        AUCTION_GOODS_USAGE_MAP.put("16", "오피스텔");
+        AUCTION_GOODS_USAGE_MAP.put("17", "근린시설");
+        AUCTION_GOODS_USAGE_MAP.put("18", "자동차");
+        AUCTION_GOODS_USAGE_MAP.put("19", "중기");
+        AUCTION_GOODS_USAGE_MAP.put("99", "기타");
     }
 
     public static String getAuctionKindDescription(String kindCode) {
@@ -106,4 +130,10 @@ public class AuctionCodeMapper {
         return EVALUATION_TABLE_TYPE_MAP.getOrDefault(tableTypeCode, "알 수 없는 감정평가 테이블 유형 코드: " + tableTypeCode);
     }
 
+    public static String getAuctionGoodsUsageDescription(String usageCode) {
+        if (usageCode == null) {
+            return null;
+        }
+        return AUCTION_GOODS_USAGE_MAP.getOrDefault(usageCode, "알 수 없는 경매 물건 용도 코드: " + usageCode);
+    }
 }
