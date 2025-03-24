@@ -1,9 +1,10 @@
 package apt.auctionapi.repository;
 
-import apt.auctionapi.entity.Tender;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import apt.auctionapi.entity.Tender;
 
 public interface TenderRepository extends JpaRepository<Tender, Long> {
 

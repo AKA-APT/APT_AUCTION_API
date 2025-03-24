@@ -1,9 +1,9 @@
 package apt.auctionapi.entity.auction.sources;
 
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * 감정 평가 정보 (Evaluation Info)

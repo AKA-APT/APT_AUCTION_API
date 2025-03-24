@@ -1,15 +1,15 @@
 package apt.auctionapi.auth.dto;
 
 public record KakaoUserInfo(
-        Long id,
-        KakaoAccount kakao_account
+    Long id,
+    KakaoAccount kakao_account
 ) {
     public record KakaoAccount(
-            Profile profile
+        Profile profile
     ) {
         public record Profile(
-                String nickname,
-                String profile_image_url
+            String nickname,
+            String profile_image_url
         ) {
         }
     }

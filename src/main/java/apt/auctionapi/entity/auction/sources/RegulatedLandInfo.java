@@ -1,7 +1,8 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import lombok.Getter;
 
 /**
  * 규제 토지 정보 (Regulated Land Info)

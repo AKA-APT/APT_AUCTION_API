@@ -1,9 +1,10 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
+import java.math.BigDecimal;
+
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.math.BigDecimal;
+import lombok.Getter;
 
 /**
  * 제시외 건물 정보 (Additional Building Info)

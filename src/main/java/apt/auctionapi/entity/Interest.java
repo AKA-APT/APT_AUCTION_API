@@ -1,19 +1,25 @@
 package apt.auctionapi.entity;
 
-import jakarta.persistence.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static jakarta.persistence.GenerationType.*;
-
-
 @Entity
 @Getter
 @Table(name = "interest")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Interest extends BaseTimeEntity{
+public class Interest extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)

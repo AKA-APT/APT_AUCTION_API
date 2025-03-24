@@ -1,14 +1,15 @@
 package apt.auctionapi.auth;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
+import java.lang.reflect.Parameter;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.lang.reflect.Parameter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -16,16 +17,14 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Object handler
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Object handler
     ) {
         // 핸들러가 HandlerMethod 타입이 아닌 경우 (정적 리소스 등) 통과
-        if (!(handler instanceof HandlerMethod)) {
+        if (!(handler instanceof HandlerMethod handlerMethod)) {
             return true;
         }
-
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
 
         // 메서드의 파라미터들을 검사하여 @AuthMember 어노테이션이 있는지 확인
         boolean requiresAuth = false;

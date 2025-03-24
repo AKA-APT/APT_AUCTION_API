@@ -1,12 +1,12 @@
 package apt.auctionapi.repository;
 
-import apt.auctionapi.entity.Interest;
-import apt.auctionapi.entity.Member;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.Optional;
+import apt.auctionapi.entity.Interest;
+import apt.auctionapi.entity.Member;
 
 public interface InterestRepository extends JpaRepository<Interest, Long> {
 

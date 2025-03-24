@@ -1,7 +1,8 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import lombok.Getter;
 
 /**
  * 경매 사진 정보 (Auction Photo Info)

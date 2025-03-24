@@ -1,7 +1,7 @@
 package apt.auctionapi.controller.dto.response;
 
 public record ErrorResponse(
-        String code,
-        String message
+    String code,
+    String message
 ) {
 }

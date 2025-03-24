@@ -1,10 +1,11 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.math.BigDecimal;
+
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.math.BigDecimal;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 경매 대상 물건 정보 (Auction Object)

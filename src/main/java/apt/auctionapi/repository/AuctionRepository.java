@@ -1,14 +1,11 @@
 package apt.auctionapi.repository;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import apt.auctionapi.entity.auction.Auction;
-import apt.auctionapi.entity.auction.AuctionSummary;
 
 /**
  * 경매 데이터 리포지토리 (Auction Repository)

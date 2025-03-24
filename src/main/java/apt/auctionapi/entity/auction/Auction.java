@@ -1,14 +1,26 @@
 package apt.auctionapi.entity.auction;
 
-import apt.auctionapi.entity.auction.sources.*;
-import lombok.Getter;
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.math.BigDecimal;
-import java.util.List;
+import apt.auctionapi.entity.auction.sources.AdditionalBuildingInfo;
+import apt.auctionapi.entity.auction.sources.AroundDisposalStatistics;
+import apt.auctionapi.entity.auction.sources.AuctionObject;
+import apt.auctionapi.entity.auction.sources.AuctionPhotoInfo;
+import apt.auctionapi.entity.auction.sources.AuctionSchedule;
+import apt.auctionapi.entity.auction.sources.BuildingStructureDetail;
+import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
+import apt.auctionapi.entity.auction.sources.DisposalGoodsExecutionInfo;
+import apt.auctionapi.entity.auction.sources.DistrictDemandInfo;
+import apt.auctionapi.entity.auction.sources.EvaluationInfo;
+import apt.auctionapi.entity.auction.sources.RegulatedLandInfo;
+import apt.auctionapi.entity.auction.sources.RentalRelationInfo;
+import lombok.Getter;
 
 /**
  * 경매 데이터 엔티티 (Auction Entity)
@@ -114,16 +126,16 @@ public class Auction {
      * 현재 입찰가를 반환
      */
     public BigDecimal getLatestBiddingPrice() {
-        if(disposalGoodsExecutionInfo.getFourthAuctionTime() != null) {
+        if (disposalGoodsExecutionInfo.getFourthAuctionTime() != null) {
             return disposalGoodsExecutionInfo.getFourthAuctionPrice();
         }
-        if(disposalGoodsExecutionInfo.getThirdAuctionTime() != null) {
+        if (disposalGoodsExecutionInfo.getThirdAuctionTime() != null) {
             return disposalGoodsExecutionInfo.getThirdAuctionPrice();
         }
-        if(disposalGoodsExecutionInfo.getSecondAuctionTime() != null) {
+        if (disposalGoodsExecutionInfo.getSecondAuctionTime() != null) {
             return disposalGoodsExecutionInfo.getSecondAuctionPrice();
         }
-        if(disposalGoodsExecutionInfo.getFirstAuctionTime() != null) {
+        if (disposalGoodsExecutionInfo.getFirstAuctionTime() != null) {
             return disposalGoodsExecutionInfo.getFirstAuctionPrice();
         }
         return disposalGoodsExecutionInfo.getAppraisedValue();

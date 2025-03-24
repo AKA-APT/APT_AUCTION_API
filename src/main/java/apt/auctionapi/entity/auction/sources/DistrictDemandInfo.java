@@ -1,9 +1,10 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
+import java.time.LocalDate;
+
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.LocalDate;
+import lombok.Getter;
 
 /**
  * 집행문 발부 정보 (District Demand Info)

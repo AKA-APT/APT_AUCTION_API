@@ -1,7 +1,8 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import lombok.Getter;
 
 /**
  * 임차 관계 및 주소 정보 (Rental Relation Info)

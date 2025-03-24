@@ -1,10 +1,11 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
-import org.springframework.data.mongodb.core.mapping.Field;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import lombok.Getter;
 
 /**
  * 사건 기본 정보 (Case Base Info)

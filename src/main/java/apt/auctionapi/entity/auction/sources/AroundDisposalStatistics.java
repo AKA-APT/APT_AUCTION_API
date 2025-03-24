@@ -1,9 +1,10 @@
 package apt.auctionapi.entity.auction.sources;
 
-import lombok.Getter;
+import java.math.BigDecimal;
+
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.math.BigDecimal;
+import lombok.Getter;
 
 /**
  * 주변 경매 통계 정보 (Around Disposal Statistics)

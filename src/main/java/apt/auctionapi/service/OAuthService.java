@@ -1,5 +1,18 @@
 package apt.auctionapi.service;
 
+import static apt.auctionapi.entity.OAuthProvider.KAKAO;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
 import apt.auctionapi.auth.dto.KakaoUserInfo;
 import apt.auctionapi.auth.dto.OAuthTokenDto;
 import apt.auctionapi.config.KakaoOAuthConfig;
@@ -9,14 +22,6 @@ import apt.auctionapi.repository.MemberRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-
-import static apt.auctionapi.entity.OAuthProvider.KAKAO;
 
 @Slf4j
 @Service
@@ -52,12 +57,12 @@ public class OAuthService {
         params.add("client_secret", kakaoOAuthConfig.getClientSecret());
 
         HttpEntity<MultiValueMap<String, String>> request =
-                new HttpEntity<>(params, headers);
+            new HttpEntity<>(params, headers);
 
         ResponseEntity<OAuthTokenDto> response = restTemplate.postForEntity(
-                kakaoOAuthConfig.getTokenUri(),
-                request,
-                OAuthTokenDto.class
+            kakaoOAuthConfig.getTokenUri(),
+            request,
+            OAuthTokenDto.class
         );
 
         OAuthTokenDto body = response.getBody();
@@ -75,10 +80,10 @@ public class OAuthService {
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
         ResponseEntity<KakaoUserInfo> response = restTemplate.exchange(
-                kakaoOAuthConfig.getUserInfoUri(),
-                HttpMethod.GET,
-                request,
-                KakaoUserInfo.class
+            kakaoOAuthConfig.getUserInfoUri(),
+            HttpMethod.GET,
+            request,
+            KakaoUserInfo.class
         );
 
         if (response.getBody() == null) {
@@ -90,19 +95,19 @@ public class OAuthService {
 
     protected Member saveOrUpdate(KakaoUserInfo userInfo) {
         Member member = memberRepository.findByProviderId(String.valueOf(userInfo.id()))
-                .map(entity -> {
-                    entity.updateProfile(
-                            userInfo.kakao_account().profile().nickname(),
-                            userInfo.kakao_account().profile().profile_image_url()
-                    );
-                    return entity;
-                })
-                .orElse(Member.builder()
-                        .nickname(userInfo.kakao_account().profile().nickname())
-                        .profileImage(userInfo.kakao_account().profile().profile_image_url())
-                        .providerId(String.valueOf(userInfo.id()))
-                        .provider(KAKAO)
-                        .build());
+            .map(entity -> {
+                entity.updateProfile(
+                    userInfo.kakao_account().profile().nickname(),
+                    userInfo.kakao_account().profile().profile_image_url()
+                );
+                return entity;
+            })
+            .orElse(Member.builder()
+                .nickname(userInfo.kakao_account().profile().nickname())
+                .profileImage(userInfo.kakao_account().profile().profile_image_url())
+                .providerId(String.valueOf(userInfo.id()))
+                .provider(KAKAO)
+                .build());
 
         return memberRepository.save(member);
     }

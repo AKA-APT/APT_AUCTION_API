@@ -1,11 +1,15 @@
 package apt.auctionapi.domain;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.sources.AuctionObject;
 import apt.auctionapi.entity.auction.sources.DisposalGoodsExecutionInfo;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 /**
  * 부동산 투자 유형 (Investment Tag)
@@ -123,7 +127,6 @@ public enum InvestmentTag {
             recommendedTags.add(ECO_FRIENDLY);
         }
 
-
         // 5. 유찰 횟수 기반 태그 추가
         int ruptureCount = getRuptureCount(auction);
         if (ruptureCount >= 3) {
@@ -161,17 +164,17 @@ public enum InvestmentTag {
 
             // 낙찰가와 감정가 비교로 갭 투자 가능성 확인
             if (executionInfo.getFirstAuctionPrice() != null &&
-                    executionInfo.getAppraisedValue() != null &&
-                    executionInfo.getFirstAuctionPrice().compareTo(
-                            executionInfo.getAppraisedValue().multiply(new BigDecimal("0.7"))) < 0) {
+                executionInfo.getAppraisedValue() != null &&
+                executionInfo.getFirstAuctionPrice().compareTo(
+                    executionInfo.getAppraisedValue().multiply(new BigDecimal("0.7"))) < 0) {
                 recommendedTags.add(GAP_INVESTMENT);
             }
         }
 
         // 최대 5개까지만 반환 (우선순위에 따라 정렬 가능)
         return recommendedTags.stream()
-                .limit(5)
-                .toList();
+            .limit(5)
+            .toList();
     }
 
     // 기존 유찰 횟수 계산 메서드
@@ -180,9 +183,9 @@ public enum InvestmentTag {
             return 0; // auction 또는 일정 리스트가 없으면 0 반환
         }
 
-        return (int) auction.getAuctionScheduleList().stream()
-                .filter(schedule -> "002".equals(schedule.getAuctionResultCode())) // 유찰 코드 필터링
-                .count();
+        return (int)auction.getAuctionScheduleList().stream()
+            .filter(schedule -> "002".equals(schedule.getAuctionResultCode())) // 유찰 코드 필터링
+            .count();
     }
 
     // 물건 종류에 따른 추천 태그 반환
@@ -192,16 +195,17 @@ public enum InvestmentTag {
         }
 
         return switch (propertyType) {
-            case "아파트" ->
-                    Arrays.asList(SELF_OCCUPANCY, LONG_TERM_INVESTMENT, GAP_INVESTMENT, PREMIUM_RESIDENTIAL, RECONSTRUCTION);
-            case "오피스텔" ->
-                    Arrays.asList(SMALL_REAL_ESTATE, RENTAL_BUSINESS, SHORT_TERM_INVESTMENT, INCOME_GENERATING, GAP_INVESTMENT);
+            case "아파트" -> Arrays.asList(SELF_OCCUPANCY, LONG_TERM_INVESTMENT, GAP_INVESTMENT, PREMIUM_RESIDENTIAL,
+                RECONSTRUCTION);
+            case "오피스텔" -> Arrays.asList(SMALL_REAL_ESTATE, RENTAL_BUSINESS, SHORT_TERM_INVESTMENT, INCOME_GENERATING,
+                GAP_INVESTMENT);
             case "상가", "상가건물" ->
-                    Arrays.asList(INCOME_GENERATING, COMMERCIAL_REAL_ESTATE, SPECIAL_COMMERCIAL_REAL_ESTATE, COMMERCIAL_DISTRICT_DEVELOPMENT);
+                Arrays.asList(INCOME_GENERATING, COMMERCIAL_REAL_ESTATE, SPECIAL_COMMERCIAL_REAL_ESTATE,
+                    COMMERCIAL_DISTRICT_DEVELOPMENT);
             case "토지", "대지" ->
-                    Arrays.asList(LAND_INVESTMENT, REDEVELOPMENT, ECO_FRIENDLY, COMMERCIAL_DISTRICT_DEVELOPMENT);
+                Arrays.asList(LAND_INVESTMENT, REDEVELOPMENT, ECO_FRIENDLY, COMMERCIAL_DISTRICT_DEVELOPMENT);
             case "단독주택", "주택" ->
-                    Arrays.asList(SELF_OCCUPANCY, REDEVELOPMENT, RECONSTRUCTION, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
+                Arrays.asList(SELF_OCCUPANCY, REDEVELOPMENT, RECONSTRUCTION, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
             case "다가구주택", "다세대주택" -> Arrays.asList(RENTAL_BUSINESS, INCOME_GENERATING, GAP_INVESTMENT, SHARED_HOUSING);
             case "빌라" -> Arrays.asList(SELF_OCCUPANCY, RENTAL_BUSINESS, GAP_INVESTMENT, SMALL_REAL_ESTATE);
             case "연립주택" -> Arrays.asList(SELF_OCCUPANCY, RENTAL_BUSINESS, RECONSTRUCTION, SMALL_REAL_ESTATE);
@@ -213,14 +217,14 @@ public enum InvestmentTag {
             case "농지", "농지용지", "전", "답" -> Arrays.asList(FARMLAND_INVESTMENT, ECO_FRIENDLY, LAND_INVESTMENT);
             case "임야", "산" -> Arrays.asList(FOREST_INVESTMENT, ECO_FRIENDLY, UNIQUE_REAL_ESTATE);
             case "펜션", "리조트" ->
-                    Arrays.asList(THEMED_REAL_ESTATE, HOTEL_ACCOMMODATION, INCOME_GENERATING, UNIQUE_REAL_ESTATE);
+                Arrays.asList(THEMED_REAL_ESTATE, HOTEL_ACCOMMODATION, INCOME_GENERATING, UNIQUE_REAL_ESTATE);
             case "숙박시설", "모텔", "호텔" -> Arrays.asList(HOTEL_ACCOMMODATION, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
             case "실버타운", "요양시설" -> Arrays.asList(THEMED_REAL_ESTATE, INCOME_GENERATING, PENSION_TYPE);
             case "한옥" -> Arrays.asList(UNIQUE_REAL_ESTATE, THEMED_REAL_ESTATE, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
             case "캠핑장" -> Arrays.asList(UNIQUE_REAL_ESTATE, THEMED_REAL_ESTATE, INCOME_GENERATING);
             case "골프장", "레저시설" -> Arrays.asList(UNIQUE_REAL_ESTATE, HIGH_RISK, INCOME_GENERATING);
             case "병원", "의료시설" ->
-                    Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
+                Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
             case "학원", "교육시설" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
             case "카페", "음식점" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, SMALL_REAL_ESTATE);
             case "프랜차이즈" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
@@ -231,13 +235,13 @@ public enum InvestmentTag {
             case "재건축", "재건축지역" -> Arrays.asList(RECONSTRUCTION, HIGH_RISK, SHORT_TERM_INVESTMENT);
             case "태양광발전소", "태양광부지" -> Arrays.asList(ECO_FRIENDLY, INCOME_GENERATING, FARMLAND_INVESTMENT);
             case "상업지구", "상업지역" ->
-                    Arrays.asList(COMMERCIAL_DISTRICT_DEVELOPMENT, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
+                Arrays.asList(COMMERCIAL_DISTRICT_DEVELOPMENT, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
             case "주상복합" -> Arrays.asList(SELF_OCCUPANCY, COMMERCIAL_REAL_ESTATE, PREMIUM_RESIDENTIAL);
             case "지식산업센터", "아파트형공장" ->
-                    Arrays.asList(FACTORY_INDUSTRIAL_COMPLEX, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
+                Arrays.asList(FACTORY_INDUSTRIAL_COMPLEX, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
             default ->
                 // 기본 추천 태그 (모든 부동산 유형에 적용 가능한 일반적인 태그)
-                    Arrays.asList(INCOME_GENERATING, LONG_TERM_INVESTMENT, SHORT_TERM_INVESTMENT, LOW_RISK, HIGH_RISK);
+                Arrays.asList(INCOME_GENERATING, LONG_TERM_INVESTMENT, SHORT_TERM_INVESTMENT, LOW_RISK, HIGH_RISK);
         };
     }
 

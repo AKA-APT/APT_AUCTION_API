@@ -5,5 +5,4 @@ public enum OAuthProvider {
     // NAVER,
     // APPLE,
     // GOOGLE,
-    ;
 }
