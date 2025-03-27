@@ -85,14 +85,11 @@ public class AuctionService {
         return auctionSummaries.stream()
             .filter(summary -> {
                 int ruptureCount = getRuptureCount(summary);
-                if (failedBidCount >= 6) {
-                    return ruptureCount >= 5; // 5회 이상 유찰
-                } else {
-                    return ruptureCount == failedBidCount; // 특정 유찰 횟수
-                }
+                return ruptureCount >= failedBidCount; // failedBidCount 이상 유찰
             })
             .toList();
     }
+
 
     private List<AuctionSummary> filterByInvestmentTags(List<AuctionSummary> auctionSummaries, List<String> tagNames) {
         if (tagNames == null || tagNames.isEmpty()) {
