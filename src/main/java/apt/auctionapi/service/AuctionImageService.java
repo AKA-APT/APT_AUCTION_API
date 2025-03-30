@@ -88,8 +88,7 @@ public class AuctionImageService {
     private JsonNode extractCsPicLst(String responseBody) {
         try {
             JsonNode rootNode = objectMapper.readTree(responseBody);
-            JsonNode csPicLst = rootNode.path("data").path("dma_result").path("csPicLst");
-            return csPicLst;
+            return rootNode.path("data").path("dma_result").path("csPicLst");
         } catch (Exception e) {
             throw new RuntimeException("JSON 파싱 오류", e);
         }
