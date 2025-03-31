@@ -4,7 +4,6 @@ import java.util.List;
 
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.auction.Auction;
-import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
 import lombok.Builder;
 
 @Builder
@@ -18,8 +17,8 @@ public record AuctionSummaryGroupedResponse(
     @Builder
     public record InnerAuctionSummaryResponse(
         String id,  // 문서 ID
+        InnerAuctionObject auctionObject,
         AuctionStatusResponse auctionStatus,
-        CaseBaseInfo caseBaseInfo,
         boolean isInterested,  // 사용자가 좋아요한 경매인지 여부
         boolean isBidding, // 사용자가 입찰한 물건인지 여부
         List<InvestmentTagResponse> investmentTags // 투자 유형 태그 목록
@@ -39,8 +38,17 @@ public record AuctionSummaryGroupedResponse(
                     .map(tag -> new InvestmentTagResponse(tag.getId(), tag.getName(), tag.getDescription()))
                     .toList())
                 .auctionStatus(AuctionStatusResponse.from(auction))
-                .caseBaseInfo(auction.getCaseBaseInfo())
+                .auctionObject(InnerAuctionObject.from(auction))
                 .build();
+        }
+
+        public record InnerAuctionObject(
+            Double latitude,
+            Double longitude
+        ) {
+            public static InnerAuctionObject from(Auction auction) {
+                return new InnerAuctionObject(auction.getLocation().getY(), auction.getLocation().getX());
+            }
         }
     }
 
