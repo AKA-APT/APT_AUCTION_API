@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AuctionImageService {
+public class ImageService {
 
     private final RestTemplate restTemplate;
     private final AuctionRepository auctionRepository;

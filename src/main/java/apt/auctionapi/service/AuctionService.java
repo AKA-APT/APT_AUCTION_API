@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.auction.Auction;
-import apt.auctionapi.entity.auction.AuctionCodeMapper;
 import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.repository.AuctionRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,35 +14,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class AuctionDetailService {
+public class AuctionService {
 
     private final AuctionRepository auctionRepository;
 
     public Auction getAuctionById(String id) {
         Auction auction = auctionRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
-
-        // 코드값 매핑
-        auction.getAuctionScheduleList().forEach(auctionSchedule -> {
-            auctionSchedule.setAuctionKind(
-                AuctionCodeMapper.getAuctionKindDescription(auctionSchedule.getAuctionKindCode()));
-            auctionSchedule.setAuctionResult(
-                AuctionCodeMapper.getAuctionResultDescription(auctionSchedule.getAuctionResultCode()));
-        });
-
-        // 코드값 매핑
-        auction.getEvaluationList().forEach(auctionEvaluation -> {
-            auctionEvaluation.setEvaluationCategory(
-                AuctionCodeMapper.getEvaluationTableTypeDescription(auctionEvaluation.getEvaluationCategoryCode()));
-            auctionEvaluation.setEvaluationItem(
-                AuctionCodeMapper.getEvaluationItemDescription(auctionEvaluation.getEvaluationItemCode()));
-        });
-
-        // 코드값 매핑
-        String usageCode = auction.getDisposalGoodsExecutionInfo().getAuctionGoodsUsageCode();
-        auction.getDisposalGoodsExecutionInfo()
-            .setAuctionGoodsUsage(AuctionCodeMapper.getAuctionGoodsUsageDescription(usageCode));
-
+        auction.mappingCodeValues();
         return auction;
     }
 

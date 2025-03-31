@@ -11,20 +11,17 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse;
 import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
 import apt.auctionapi.entity.auction.AuctionSummary;
-import apt.auctionapi.repository.AuctionRepository;
 import apt.auctionapi.repository.InterestRepository;
-import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class AuctionInterestService {
+public class InterestService {
 
     private final InterestRepository interestRepository;
     private final MongoTemplate mongoTemplate;

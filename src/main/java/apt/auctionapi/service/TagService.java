@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class InvestmentTagService {
+public class TagService {
 
     private final InvestmentTagRepository investmentTagRepository;
 

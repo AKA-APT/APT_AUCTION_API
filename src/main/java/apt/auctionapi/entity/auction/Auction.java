@@ -140,4 +140,27 @@ public class Auction {
         }
         return disposalGoodsExecutionInfo.getAppraisedValue();
     }
+
+    public void mappingCodeValues() {
+        // 코드값 매핑
+        getAuctionScheduleList().forEach(auctionSchedule -> {
+            auctionSchedule.setAuctionKind(
+                AuctionCodeMapper.getAuctionKindDescription(auctionSchedule.getAuctionKindCode()));
+            auctionSchedule.setAuctionResult(
+                AuctionCodeMapper.getAuctionResultDescription(auctionSchedule.getAuctionResultCode()));
+        });
+
+        // 코드값 매핑
+        getEvaluationList().forEach(auctionEvaluation -> {
+            auctionEvaluation.setEvaluationCategory(
+                AuctionCodeMapper.getEvaluationTableTypeDescription(auctionEvaluation.getEvaluationCategoryCode()));
+            auctionEvaluation.setEvaluationItem(
+                AuctionCodeMapper.getEvaluationItemDescription(auctionEvaluation.getEvaluationItemCode()));
+        });
+
+        // 코드값 매핑
+        String usageCode = getDisposalGoodsExecutionInfo().getAuctionGoodsUsageCode();
+        getDisposalGoodsExecutionInfo()
+            .setAuctionGoodsUsage(AuctionCodeMapper.getAuctionGoodsUsageDescription(usageCode));
+    }
 }

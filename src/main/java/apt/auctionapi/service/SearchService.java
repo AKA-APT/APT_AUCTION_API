@@ -27,7 +27,6 @@ import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
 import apt.auctionapi.entity.auction.AuctionSummary;
-import apt.auctionapi.repository.AuctionRepository;
 import apt.auctionapi.repository.InterestRepository;
 import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,14 +34,13 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class AuctionSearchService {
+public class SearchService {
 
-    private final AuctionRepository auctionRepository;
     private final InterestRepository interestRepository;
     private final TenderRepository tenderRepository;
     private final MongoTemplate mongoTemplate;
-    private final AuctionInterestService auctionInterestService;
-    private final AuctionDetailService auctionDetailService;
+    private final InterestService interestService;
+    private final AuctionService auctionService;
 
     public List<AuctionSummaryGroupedResponse> getAuctionsByLocationRange(
         AuctionSearchRequest filter,
@@ -76,7 +74,7 @@ public class AuctionSearchService {
     private List<AuctionSummary> filterByRuptureCount(List<AuctionSummary> auctionSummaries, int failedBidCount) {
         return auctionSummaries.stream()
             .filter(summary -> {
-                int ruptureCount = auctionDetailService.getRuptureCount(summary);
+                int ruptureCount = auctionService.getRuptureCount(summary);
                 return ruptureCount >= failedBidCount;
             })
             .toList();
@@ -85,7 +83,7 @@ public class AuctionSearchService {
     private List<AuctionSummary> filterByInvestmentTags(List<AuctionSummary> auctionSummaries, List<String> tagNames) {
         return auctionSummaries.stream()
             .filter(summary -> {
-                List<InvestmentTag> auctionTags = auctionDetailService.getInvestmentTags(summary);
+                List<InvestmentTag> auctionTags = auctionService.getInvestmentTags(summary);
                 return tagNames.stream().anyMatch(name ->
                     auctionTags.stream().anyMatch(tag -> tag.getName().equals(name)));
             })
@@ -193,11 +191,11 @@ public class AuctionSearchService {
         List<Interest> interests,
         List<Tender> tenders
     ) {
-        List<InvestmentTag> investmentTags = auctionDetailService.getInvestmentTags(auction);
+        List<InvestmentTag> investmentTags = auctionService.getInvestmentTags(auction);
         return InnerAuctionSummaryResponse.of(
             auction,
-            auctionInterestService.isInterestedAuction(member, auction, interests),
-            auctionInterestService.isTenderedAuction(member, auction, tenders),
+            interestService.isInterestedAuction(member, auction, interests),
+            interestService.isTenderedAuction(member, auction, tenders),
             investmentTags
         );
     }

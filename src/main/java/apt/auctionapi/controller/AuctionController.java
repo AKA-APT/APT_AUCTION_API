@@ -20,9 +20,9 @@ import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.AuctionSummary;
-import apt.auctionapi.service.AuctionDetailService;
-import apt.auctionapi.service.AuctionInterestService;
-import apt.auctionapi.service.AuctionSearchService;
+import apt.auctionapi.service.AuctionService;
+import apt.auctionapi.service.InterestService;
+import apt.auctionapi.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,9 +34,9 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v2/auctions")
 public class AuctionController {
 
-    private final AuctionDetailService auctionDetailService;
-    private final AuctionInterestService auctionInterestService;
-    private final AuctionSearchService auctionSearchService;
+    private final AuctionService auctionService;
+    private final InterestService interestService;
+    private final SearchService searchService;
 
     @Operation(summary = "경매 목록 조회", description = "지정한 범위 내의 경매 목록을 조회합니다.")
     @GetMapping
@@ -45,14 +45,14 @@ public class AuctionController {
         @AuthMember(required = false) Member member
     ) {
         return ResponseEntity.ok(
-            auctionSearchService.getAuctionsByLocationRange(filter, member)
+            searchService.getAuctionsByLocationRange(filter, member)
         );
     }
 
     @Operation(summary = "경매 상세 조회", description = "지정한 경매 ID에 해당하는 경매의 상세 정보를 조회합니다.")
     @GetMapping("/{id}")
     public ResponseEntity<Auction> getAuctionById(@PathVariable String id) {
-        return ResponseEntity.ok(auctionDetailService.getAuctionById(id));
+        return ResponseEntity.ok(auctionService.getAuctionById(id));
     }
 
     @Operation(summary = "좋아요", description = "사용자가 경매를 좋아요합니다.")
@@ -62,7 +62,7 @@ public class AuctionController {
         @Schema(description = "경매 ID", example = "60f1b3b3b3b3b3b3b3b3b3b3")
         @PathVariable String id
     ) {
-        auctionInterestService.interestAuction(member, id);
+        interestService.interestAuction(member, id);
         return ResponseEntity.ok().build();
     }
 
@@ -71,7 +71,7 @@ public class AuctionController {
     public ResponseEntity<List<AuctionSummary>> getInterestAuctions(
         @AuthMember Member member
     ) {
-        return ResponseEntity.ok(auctionInterestService.getInterestedAuctions(member));
+        return ResponseEntity.ok(interestService.getInterestedAuctions(member));
     }
 
     @Operation(summary = "경매 투자 유형 태그 조회", description = "지정한 경매 ID에 해당하는 경매의 투자 유형 태그를 조회합니다.")
@@ -80,7 +80,7 @@ public class AuctionController {
         @Schema(description = "경매 ID", example = "60f1b3b3b3b3b3b3b3b3b3b3")
         @PathVariable String id
     ) {
-        List<InvestmentTag> tags = auctionDetailService.getInvestmentTagsForAuction(id);
+        List<InvestmentTag> tags = auctionService.getInvestmentTagsForAuction(id);
 
         List<InvestmentTagResponse> response = tags.stream()
             .map(tag -> new InvestmentTagResponse(tag.getId(), tag.getName(), tag.getDescription()))

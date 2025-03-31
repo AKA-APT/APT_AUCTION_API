@@ -48,6 +48,7 @@ public class TenderService {
         for (Tender tender : tenders) {
             Auction auction = auctionRepository.findById(tender.getAuctionId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 매물입니다 " + tender.getAuctionId()));
+            auction.mappingCodeValues();
             result.add(
                 new TenderResponse(
                     auction.getId(),
