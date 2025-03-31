@@ -40,6 +40,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedOriginPatterns(
                 "http://localhost:3000",
+                "https://api.aptapt.kro.kr",
                 "https://aptapt.kro.kr"
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")

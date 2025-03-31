@@ -100,18 +100,28 @@ jobs:
             --spring.profiles.active=prod \
             > /home/ubuntu/app.log 2>&1' &
             
-            echo "Application started"
-            sleep 35
+            echo "Application startup initiated"
             
-            echo "Checking application health..."
-            if curl -f http://localhost:8080/actuator/health; then
-              echo "Application is healthy"
-            else
-              echo "Application failed to start"
-              echo "Logs:"
-              sudo tail -n 100 /home/ubuntu/app.log
+            # Wait for application to start with timeout
+            MAX_ATTEMPTS=30
+            ATTEMPTS=0
+            while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+              echo "Checking application health... (Attempt $((ATTEMPTS + 1))/$MAX_ATTEMPTS)"
+              if curl -f http://localhost:8080/actuator/health; then
+                echo "Application is healthy"
+                break
+              fi
+              ATTEMPTS=$((ATTEMPTS + 1))
+              sleep 5
+            done
+            
+            if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
+              echo "Application failed to start within timeout period"
+              echo "Recent application logs:"
+              sudo tail -n 200 /home/ubuntu/app.log
               exit 1
             fi
             
+            echo "Application startup completed successfully"
             echo "Recent application logs:"
             sudo tail -n 100 /home/ubuntu/app.log
