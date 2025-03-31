@@ -139,5 +139,4 @@ jobs:
             fi
             
             echo "Deployment completed successfully"
-            # Force exit the script
-            kill -9 $$
+            exit 0

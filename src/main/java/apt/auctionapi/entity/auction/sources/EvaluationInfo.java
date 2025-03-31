@@ -38,7 +38,6 @@ public class EvaluationInfo {
      * 감정 평가 분류 코드 (예: "00082001")
      */
     @Field("aeeWevlMnpntTbltDvsCd")
-    @JsonIgnore
     private String evaluationCategoryCode;
 
     @Setter
@@ -48,7 +47,6 @@ public class EvaluationInfo {
      * 감정 평가 항목 코드 (예: "00083001")
      */
     @Field("aeeWevlMnpntItmCd")
-    @JsonIgnore
     private String evaluationItemCode;
 
     @Setter

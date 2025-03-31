@@ -42,7 +42,6 @@ public class AuctionSchedule {
      * 경매 종류 코드 (예: "002" → 유찰)
      */
     @Field("auctnDxdyKndCd")
-    @JsonIgnore
     private String auctionKindCode;
 
     @Setter
@@ -52,7 +51,6 @@ public class AuctionSchedule {
      * 경매 결과 코드 (예: "002" → 유찰)
      */
     @Field("auctnDxdyRsltCd")
-    @JsonIgnore
     private String auctionResultCode;
 
     @Setter
