@@ -17,11 +17,20 @@ public record AuctionStatusResponse(
     @Schema(description = "낙찰 기일", example = "2025-03-15")
     LocalDate auctionDate,  // 낙찰 기일
 
-    @Schema(description = "낙찰 가격", example = "150000000")
-    BigDecimal auctionPrice, // 낙찰 가격
+    @Schema(description = "매각가격", example = "150000000")
+    BigDecimal salePrice, // 매각가격
+
+    @Schema(description = "최저낙찰가", example = "160000000")
+    BigDecimal minimumPrice, // 최저낙찰가
+
+    @Schema(description = "감정평가액", example = "200000000")
+    BigDecimal appraisedValue, // 감정평가액
 
     @Schema(description = "유찰 횟수", example = "2")
-    Long ruptureCount       // 유찰 횟수
+    Long ruptureCount,      // 유찰 횟수
+
+    @Schema(description = "매물 용도", example = "주거")
+    String propertyUsage    // 매물 용도
 ) {
     // 경매 결과 코드 상수
     private static final String AUCTION_FAILURE_CODE = "002";  // 유찰
@@ -37,7 +46,10 @@ public record AuctionStatusResponse(
                 "취소",
                 auction.getDisposalGoodsExecutionInfo().getAuctionDate(),
                 BigDecimal.ZERO,
-                calculateFailureCount(auction)
+                auction.getDisposalGoodsExecutionInfo().getFirstAuctionPrice(),
+                auction.getDisposalGoodsExecutionInfo().getAppraisedValue(),
+                calculateFailureCount(auction),
+                auction.getDisposalGoodsExecutionInfo().getAuctionGoodsUsage()
             );
         }
 
@@ -57,6 +69,12 @@ public record AuctionStatusResponse(
             .map(AuctionSchedule::getFinalAuctionPrice)
             .orElse(BigDecimal.ZERO);
 
+        // 최저낙찰가 가져오기 (최초 경매 시작 가격 사용)
+        BigDecimal minimumPrice = auction.getDisposalGoodsExecutionInfo().getFirstAuctionPrice();
+
+        // 감정평가액 가져오기
+        BigDecimal appraisedValue = auction.getDisposalGoodsExecutionInfo().getAppraisedValue();
+
         // 결과 코드에 따른 상태 결정
         String status = mapCodeToStatus(resultCode);
 
@@ -64,7 +82,10 @@ public record AuctionStatusResponse(
             status,
             targetDate,
             finalPrice,
-            calculateFailureCount(auction)
+            minimumPrice,
+            appraisedValue,
+            calculateFailureCount(auction),
+            auction.getDisposalGoodsExecutionInfo().getAuctionGoodsUsage()
         );
     }
 

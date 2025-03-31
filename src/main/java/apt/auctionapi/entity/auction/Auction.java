@@ -143,24 +143,44 @@ public class Auction {
 
     public void mappingCodeValues() {
         // 코드값 매핑
-        getAuctionScheduleList().forEach(auctionSchedule -> {
-            auctionSchedule.setAuctionKind(
-                AuctionCodeMapper.getAuctionKindDescription(auctionSchedule.getAuctionKindCode()));
-            auctionSchedule.setAuctionResult(
-                AuctionCodeMapper.getAuctionResultDescription(auctionSchedule.getAuctionResultCode()));
-        });
+        if (getAuctionScheduleList() != null) {
+            getAuctionScheduleList().forEach(auctionSchedule -> {
+                if (auctionSchedule != null) {
+                    if (auctionSchedule.getAuctionKindCode() != null) {
+                        auctionSchedule.setAuctionKind(
+                            AuctionCodeMapper.getAuctionKindDescription(auctionSchedule.getAuctionKindCode()));
+                    }
+                    if (auctionSchedule.getAuctionResultCode() != null) {
+                        auctionSchedule.setAuctionResult(
+                            AuctionCodeMapper.getAuctionResultDescription(auctionSchedule.getAuctionResultCode()));
+                    }
+                }
+            });
+        }
 
         // 코드값 매핑
-        getEvaluationList().forEach(auctionEvaluation -> {
-            auctionEvaluation.setEvaluationCategory(
-                AuctionCodeMapper.getEvaluationTableTypeDescription(auctionEvaluation.getEvaluationCategoryCode()));
-            auctionEvaluation.setEvaluationItem(
-                AuctionCodeMapper.getEvaluationItemDescription(auctionEvaluation.getEvaluationItemCode()));
-        });
+        if (getEvaluationList() != null) {
+            getEvaluationList().forEach(auctionEvaluation -> {
+                if (auctionEvaluation != null) {
+                    if (auctionEvaluation.getEvaluationCategoryCode() != null) {
+                        auctionEvaluation.setEvaluationCategory(
+                            AuctionCodeMapper.getEvaluationTableTypeDescription(auctionEvaluation.getEvaluationCategoryCode()));
+                    }
+                    if (auctionEvaluation.getEvaluationItemCode() != null) {
+                        auctionEvaluation.setEvaluationItem(
+                            AuctionCodeMapper.getEvaluationItemDescription(auctionEvaluation.getEvaluationItemCode()));
+                    }
+                }
+            });
+        }
 
         // 코드값 매핑
-        String usageCode = getDisposalGoodsExecutionInfo().getAuctionGoodsUsageCode();
-        getDisposalGoodsExecutionInfo()
-            .setAuctionGoodsUsage(AuctionCodeMapper.getAuctionGoodsUsageDescription(usageCode));
+        if (getDisposalGoodsExecutionInfo() != null) {
+            String usageCode = getDisposalGoodsExecutionInfo().getAuctionGoodsUsageCode();
+            if (usageCode != null) {
+                getDisposalGoodsExecutionInfo()
+                    .setAuctionGoodsUsage(AuctionCodeMapper.getAuctionGoodsUsageDescription(usageCode));
+            }
+        }
     }
 }

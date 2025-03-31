@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.auction.Auction;
-import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.repository.AuctionRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -35,15 +34,7 @@ public class AuctionService {
             .count();
     }
 
-    public Integer getRuptureCount(AuctionSummary auctionSummary) {
-        Auction auction = auctionRepository.findById(auctionSummary.getId())
-            .orElse(null);
-        return getRuptureCount(auction);
-    }
-
-    public List<InvestmentTag> getInvestmentTags(AuctionSummary auctionSummary) {
-        Auction auction = auctionRepository.findById(auctionSummary.getId())
-            .orElse(null);
+    public List<InvestmentTag> getInvestmentTags(Auction auction) {
         if (auction == null) {
             return List.of();
         }

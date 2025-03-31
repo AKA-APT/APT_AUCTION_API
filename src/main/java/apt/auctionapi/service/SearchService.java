@@ -26,10 +26,13 @@ import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
-import apt.auctionapi.entity.auction.AuctionSummary;
+import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.repository.InterestRepository;
 import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Transactional(readOnly = true)
@@ -48,42 +51,43 @@ public class SearchService {
     ) {
         Criteria criteria = buildCriteria(filter);
         Aggregation aggregation = buildAggregation(criteria);
-        List<AuctionSummary> auctionSummaries = executeAggregation(aggregation);
+        List<Auction> auctions = executeAggregation(aggregation);
+        auctions.forEach(Auction::mappingCodeValues);
 
         // 유찰 횟수 필터 적용
         if (filter.failedBidCount() != null && filter.failedBidCount() > 0) {
-            auctionSummaries = filterByRuptureCount(auctionSummaries, filter.failedBidCount());
+            auctions = filterByRuptureCount(auctions, filter.failedBidCount());
         }
 
         // 투자 유형 태그 필터 적용
         if (filter.investmentTags() != null && !filter.investmentTags().isEmpty()) {
-            auctionSummaries = filterByInvestmentTags(auctionSummaries, filter.investmentTags());
+            auctions = filterByInvestmentTags(auctions, filter.investmentTags());
         }
 
         if (member == null) {
-            return getAuctionSummaryGroupedResponses(auctionSummaries, null, Collections.emptyList(),
+            return getAuctionSummaryGroupedResponses(auctions, null, Collections.emptyList(),
                 Collections.emptyList());
         }
 
         List<Interest> interests = interestRepository.findAllByMemberId(member.getId());
         List<Tender> tenders = tenderRepository.findAllByMemberId(member.getId());
 
-        return getAuctionSummaryGroupedResponses(auctionSummaries, member, interests, tenders);
+        return getAuctionSummaryGroupedResponses(auctions, member, interests, tenders);
     }
 
-    private List<AuctionSummary> filterByRuptureCount(List<AuctionSummary> auctionSummaries, int failedBidCount) {
-        return auctionSummaries.stream()
-            .filter(summary -> {
-                int ruptureCount = auctionService.getRuptureCount(summary);
+    private List<Auction> filterByRuptureCount(List<Auction> auctions, int failedBidCount) {
+        return auctions.stream()
+            .filter(auction -> {
+                int ruptureCount = auctionService.getRuptureCount(auction);
                 return ruptureCount >= failedBidCount;
             })
             .toList();
     }
 
-    private List<AuctionSummary> filterByInvestmentTags(List<AuctionSummary> auctionSummaries, List<String> tagNames) {
-        return auctionSummaries.stream()
-            .filter(summary -> {
-                List<InvestmentTag> auctionTags = auctionService.getInvestmentTags(summary);
+    private List<Auction> filterByInvestmentTags(List<Auction> auctions, List<String> tagNames) {
+        return auctions.stream()
+            .filter(auction -> {
+                List<InvestmentTag> auctionTags = auctionService.getInvestmentTags(auction);
                 return tagNames.stream().anyMatch(name ->
                     auctionTags.stream().anyMatch(tag -> tag.getName().equals(name)));
             })
@@ -100,11 +104,12 @@ public class SearchService {
                 new Point(filter.lbLng(), filter.lbLat())
             ));
 
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         Criteria ongoingAuctionCriteria = where("gdsDspslDxdyLst")
             .elemMatch(
                 where("auctnDxdyKndCd").is("01")
                     .and("auctnDxdyRsltCd").is(null)
-            );
+            ).and("dspslGdsDxdyInfo.dspslDxdyYmd").gt(today);
 
         Criteria notCancelledCriteria = new Criteria().orOperator(
             where("isAuctionCancelled").is(false),
@@ -118,7 +123,7 @@ public class SearchService {
         );
 
         if (filter.minBidPrice() != null) {
-            criteria.and("minBidPrice").gte(filter.minBidPrice());
+            criteria.and("dspslGdsDxdyInfo.fstPbancLwsDspslPrc").gte(filter.minBidPrice());
         }
 
         return criteria;
@@ -130,10 +135,8 @@ public class SearchService {
             .and("id").as("id")
             .and("csBaseInfo").as("caseBaseInfo")
             .and("location").as("location")
-            .and("dspslGdsDxdyInfo.fstPbancLwsDspslPrc").as("minBidPrice")
-            .and("isAuctionCancelled").as("isAuctionCancelled")
-            .and(ArrayOperators.ArrayElemAt.arrayOf("gdsDspslObjctLst").elementAt(0))
-            .as("auctionObject");
+            .and("dspslGdsDxdyInfo").as("dspslGdsDxdyInfo")
+            .and("isAuctionCancelled").as("isAuctionCancelled");
 
         MatchOperation matchStage = Aggregation.match(criteria);
 
@@ -143,30 +146,30 @@ public class SearchService {
         );
     }
 
-    private List<AuctionSummary> executeAggregation(Aggregation aggregation) {
-        AggregationResults<AuctionSummary> results = mongoTemplate.aggregate(
-            aggregation, "auctions", AuctionSummary.class);
+    private List<Auction> executeAggregation(Aggregation aggregation) {
+        AggregationResults<Auction> results = mongoTemplate.aggregate(
+            aggregation, "auctions", Auction.class);
         return results.getMappedResults();
     }
 
     private List<AuctionSummaryGroupedResponse> getAuctionSummaryGroupedResponses(
-        List<AuctionSummary> auctionSummaries,
+        List<Auction> auctions,
         Member member,
         List<Interest> interests,
         List<Tender> tenders
     ) {
         Map<String, List<InnerAuctionSummaryResponse>> groupedAuctions = groupAuctionsByLocation(
-            auctionSummaries, member, interests, tenders);
+            auctions, member, interests, tenders);
         return convertToGroupedResponses(groupedAuctions);
     }
 
     private Map<String, List<InnerAuctionSummaryResponse>> groupAuctionsByLocation(
-        List<AuctionSummary> auctionSummaries,
+        List<Auction> auctions,
         Member member,
         List<Interest> interests,
         List<Tender> tenders
     ) {
-        return auctionSummaries.stream()
+        return auctions.stream()
             .filter(this::hasValidLocation)
             .collect(Collectors.groupingBy(
                 this::createLocationKey,
@@ -177,16 +180,16 @@ public class SearchService {
             ));
     }
 
-    private boolean hasValidLocation(AuctionSummary auction) {
+    private boolean hasValidLocation(Auction auction) {
         return auction.getLocation() != null;
     }
 
-    private String createLocationKey(AuctionSummary auction) {
+    private String createLocationKey(Auction auction) {
         return auction.getLocation().getY() + "," + auction.getLocation().getX();
     }
 
     private InnerAuctionSummaryResponse createInnerAuctionResponse(
-        AuctionSummary auction,
+        Auction auction,
         Member member,
         List<Interest> interests,
         List<Tender> tenders
@@ -194,8 +197,8 @@ public class SearchService {
         List<InvestmentTag> investmentTags = auctionService.getInvestmentTags(auction);
         return InnerAuctionSummaryResponse.of(
             auction,
-            interestService.isInterestedAuction(member, auction, interests),
-            interestService.isTenderedAuction(member, auction, tenders),
+            interestService.isInterestedAuctionByAuction(member, auction, interests),
+            interestService.isTenderedAuctionByAuction(member, auction, tenders),
             investmentTags
         );
     }
