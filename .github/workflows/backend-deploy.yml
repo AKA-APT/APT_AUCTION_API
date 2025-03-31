@@ -87,20 +87,24 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           envs: AWS_ACCESS_KEY,AWS_SECRET_KEY,AWS_REGION
-          environment: |
-            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
-            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
-            AWS_REGION=ap-northeast-2
           script: |
             echo "Starting application..."
             cd /home/ubuntu
             
-            nohup sudo -E bash -c 'AWS_ACCESS_KEY=$AWS_ACCESS_KEY AWS_SECRET_KEY=$AWS_SECRET_KEY AWS_REGION=$AWS_REGION java \
+            # Set environment variables
+            export AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+            export AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            export AWS_REGION=ap-northeast-2
+            
+            # Start the application
+            nohup sudo -E bash -c 'java \
             -jar /home/ubuntu/build/libs/auction-api.jar \
             --spring.profiles.active=prod \
             > /home/ubuntu/app.log 2>&1' &
             
-            echo "Application startup initiated"
+            # Store the PID
+            APP_PID=$!
+            echo "Application started with PID: $APP_PID"
             
             # Wait for application to start with timeout
             MAX_ATTEMPTS=30
@@ -125,3 +129,14 @@ jobs:
             echo "Application startup completed successfully"
             echo "Recent application logs:"
             sudo tail -n 100 /home/ubuntu/app.log
+            
+            # Verify the process is still running
+            if ! kill -0 $APP_PID 2>/dev/null; then
+              echo "Application process is not running"
+              echo "Recent application logs:"
+              sudo tail -n 200 /home/ubuntu/app.log
+              exit 1
+            fi
+            
+            echo "Deployment completed successfully"
+            exit 0
