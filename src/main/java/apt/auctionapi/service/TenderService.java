@@ -28,7 +28,7 @@ public class TenderService {
     public void createTender(Member member, CreateTenderRequest request) {
         Auction auction = auctionRepository.findById(request.auctionId())
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 매물입니다 " + request.auctionId()));
-        BigDecimal biddingPrice = auction.getDisposalGoodsExecutionInfo().getFirstAuctionPrice();
+        BigDecimal biddingPrice = auction.getLatestBiddingPrice();
         if (request.amount() < biddingPrice.longValue()) {
             throw new IllegalArgumentException("최저 입찰가보다 낮은 금액으로 입찰할 수 없습니다");
         }

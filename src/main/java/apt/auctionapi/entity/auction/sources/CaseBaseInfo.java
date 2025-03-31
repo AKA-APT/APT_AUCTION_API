@@ -89,6 +89,12 @@ public class CaseBaseInfo {
     private String departmentPhone;
 
     /**
+     * 소송 유형 코드 (예: "2")
+     */
+    @Field("lwstDvsCd")
+    private String lawsuitTypeCode;
+
+    /**
      * 사용자 사건 번호 (예: "2024타경112651")
      */
     @Field("userCsNo")

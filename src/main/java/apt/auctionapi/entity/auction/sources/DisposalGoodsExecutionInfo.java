@@ -6,8 +6,6 @@ import java.time.LocalTime;
 
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -72,7 +70,6 @@ public class DisposalGoodsExecutionInfo {
      * 경매 물건 사용 코드 (예: "11")
      */
     @Field("auctnGdsUsgCd")
-    @JsonIgnore
     private String auctionGoodsUsageCode;
 
     @Setter
@@ -97,6 +94,30 @@ public class DisposalGoodsExecutionInfo {
     private BigDecimal firstAuctionPrice;
 
     /**
+     * 두 번째 경매 시작 가격 (예: null → 진행되지 않음)
+     */
+    @Field("scndPbancLwsDspslPrc")
+    private BigDecimal secondAuctionPrice;
+
+    /**
+     * 세 번째 경매 시작 가격 (예: null → 진행되지 않음)
+     */
+    @Field("thrdPbancLwsDspslPrc")
+    private BigDecimal thirdAuctionPrice;
+
+    /**
+     * 네 번째 경매 시작 가격 (예: null → 진행되지 않음)
+     */
+    @Field("fothPbancLwsDspslPrc")
+    private BigDecimal fourthAuctionPrice;
+
+    /**
+     * 입찰 구분 코드 (예: "000331")
+     */
+    @Field("bidDvsCd")
+    private String bidTypeCode;
+
+    /**
      * 경매 진행 날짜 (예: "2025-02-27")
      */
     @Field("dspslDxdyYmd")
@@ -109,10 +130,34 @@ public class DisposalGoodsExecutionInfo {
     private LocalTime firstAuctionTime;
 
     /**
+     * 두 번째 경매 진행 시간 (예: null → 진행되지 않음)
+     */
+    @Field("scndDspslHm")
+    private LocalTime secondAuctionTime;
+
+    /**
+     * 세 번째 경매 진행 시간 (예: null → 진행되지 않음)
+     */
+    @Field("thrdDspslHm")
+    private LocalTime thirdAuctionTime;
+
+    /**
+     * 네 번째 경매 진행 시간 (예: null → 진행되지 않음)
+     */
+    @Field("fothDspslHm")
+    private LocalTime fourthAuctionTime;
+
+    /**
      * 경매 결정 날짜 (예: "2025-03-06")
      */
     @Field("dspslDcsnDxdyYmd")
     private LocalDate auctionDecisionDate;
+
+    /**
+     * 경매 물건 문서 ID (예: "C60DF48BAC1906DA775CF92C01211EE7")
+     */
+    @Field("dspslGdsSpcfcEcdocId")
+    private String auctionDocumentId;
 
     /**
      * 경매 진행 상태 코드 (예: "00")
@@ -139,6 +184,18 @@ public class DisposalGoodsExecutionInfo {
     private String auctionDecisionPlace;
 
     /**
+     * 입찰 시작일 (예: null → 진행되지 않음)
+     */
+    @Field("bidBgngYmd")
+    private LocalDate bidStartDate;
+
+    /**
+     * 입찰 종료일 (예: null → 진행되지 않음)
+     */
+    @Field("bidEndYmd")
+    private LocalDate bidEndDate;
+
+    /**
      * 법원 이름 (예: "서울중앙지방법원")
      */
     @Field("cortOfcNm")
@@ -149,4 +206,16 @@ public class DisposalGoodsExecutionInfo {
      */
     @Field("cortSptNm")
     private String supportCourtName;
+
+    /**
+     * 실제 물건 유형 (예: "1")
+     */
+    @Field("realMulKind")
+    private String realEstateType;
+
+    /**
+     * 인가 코드 (예: "YQN2WHHG1nS29x92QX9H4LLjRRKBbUrj7vn1CXtTlONucV8ZANXWA8KIIxcTe6ott+ieyV…")
+     */
+    @Field("orvParam")
+    private String approvalCode;
 }
