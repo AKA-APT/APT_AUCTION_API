@@ -49,24 +49,6 @@ public class InterestService {
         return results.getMappedResults();
     }
 
-    public List<Auction> getInterestedAuctionsByAuction(Member member) {
-        List<String> auctionIds = interestRepository.findAllByMemberId(member.getId()).stream()
-            .map(Interest::getAuctionId)
-            .toList();
-
-        if (auctionIds.isEmpty()) {
-            return List.of();
-        }
-
-        Aggregation aggregation = Aggregation.newAggregation(
-            Aggregation.match(where("_id").in(auctionIds))
-        );
-
-        AggregationResults<Auction> results = mongoTemplate.aggregate(aggregation, "auctions",
-            Auction.class);
-        return results.getMappedResults();
-    }
-
     @Transactional
     public void interestAuction(Member member, String id) {
         Optional<Interest> existingInterest = interestRepository.findByMemberAndAuctionId(member, id);
@@ -82,15 +64,6 @@ public class InterestService {
             .build());
     }
 
-    public Boolean isInterestedAuction(Member member, AuctionSummary auction, List<Interest> interests) {
-        if (member == null) {
-            return false;
-        }
-        return interests.stream()
-            .map(Interest::getAuctionId)
-            .anyMatch(it -> it.equals(auction.getId()));
-    }
-
     public boolean isInterestedAuctionByAuction(Member member, Auction auction, List<Interest> interests) {
         if (member == null || auction == null) {
             return false;
@@ -98,15 +71,6 @@ public class InterestService {
         return interests.stream()
             .map(Interest::getAuctionId)
             .anyMatch(id -> id.equals(auction.getId()));
-    }
-
-    public Boolean isTenderedAuction(Member member, AuctionSummary auction, List<Tender> tenders) {
-        if (member == null) {
-            return false;
-        }
-        return tenders.stream()
-            .map(Tender::getAuctionId)
-            .anyMatch(it -> it.equals(auction.getId()));
     }
 
     public boolean isTenderedAuctionByAuction(Member member, Auction auction, List<Tender> tenders) {

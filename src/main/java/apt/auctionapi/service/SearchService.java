@@ -2,6 +2,8 @@ package apt.auctionapi.service;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +13,6 @@ import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
@@ -30,9 +31,6 @@ import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.repository.InterestRepository;
 import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @Service
 @Transactional(readOnly = true)
