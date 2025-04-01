@@ -37,7 +37,7 @@ public class AuctionSchedule {
     private String auctionPlace;
 
     /**
-     * 경매 종류 코드 (예: "002" → 유찰)
+     * 경매 종류 코드 (예: "01" → 매각 기일)
      */
     @Field("auctnDxdyKndCd")
     private String auctionKindCode;
