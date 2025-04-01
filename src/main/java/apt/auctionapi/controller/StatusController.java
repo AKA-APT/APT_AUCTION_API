@@ -1,12 +1,16 @@
 package apt.auctionapi.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import apt.auctionapi.controller.dto.response.AuctionStatusResponse;
-import apt.auctionapi.service.AuctionStatusService;
+import apt.auctionapi.service.StatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "경매", description = "경매 목록 조회 및 상세 조회 API")
 @RestController
