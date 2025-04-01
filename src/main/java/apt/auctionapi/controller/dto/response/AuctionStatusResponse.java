@@ -18,7 +18,7 @@ public record AuctionStatusResponse(
     LocalDate auctionDate,  // 낙찰 기일
 
     @Schema(description = "매각가격", example = "150000000")
-    BigDecimal salePrice, // 매각가격
+    BigDecimal auctionPrice, // 매각가격
 
     @Schema(description = "최저낙찰가", example = "160000000")
     BigDecimal minimumPrice, // 최저낙찰가
