@@ -95,10 +95,13 @@ jobs:
             export AWS_REGION=ap-northeast-2
             
             # Start the application
-            nohup sudo setsid bash -c 'java \
-            -jar /home/ubuntu/build/libs/auction-api.jar \
+            # 1. 명령어를 백그라운드로 실행
+            nohup java -jar /home/ubuntu/build/libs/auction-api.jar \
             --spring.profiles.active=prod \
-            > /home/ubuntu/app.log 2>&1'
+            > /home/ubuntu/app.log 2>&1 < /dev/null &
+
+            # 2. 백그라운드 프로세스를 쉘에서 분리
+            disown
             
             # Store the PID
             APP_PID=$!
