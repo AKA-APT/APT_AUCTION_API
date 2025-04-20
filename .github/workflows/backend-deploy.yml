@@ -74,8 +74,6 @@ jobs:
             else
               echo "Port 8080 is free."
             fi
-            
-            echo "Remove existing jar file..."
         continue-on-error: true
 
       # 애플리케이션 시작
@@ -100,7 +98,8 @@ jobs:
             nohup sudo -E bash -c 'java \
             -jar /home/ubuntu/build/libs/auction-api.jar \
             --spring.profiles.active=prod \
-            > /home/ubuntu/app.log 2>&1' &
+            > /home/ubuntu/app.log 2>&1' & \
+            disown
             
             # Store the PID
             APP_PID=$!
