@@ -97,14 +97,14 @@ jobs:
             # Start the application
             sudo nohup java -jar /home/ubuntu/build/libs/auction-api.jar \
             --spring.profiles.active=prod \
-            > /home/ubuntu/app.log 2>&1 < /dev/null &
+            > /tmp/app.log 2>&1 < /dev/null &
             
             # Store the PID
             APP_PID=$!
             echo "Application started with PID: $APP_PID"
             
             # Wait for application to start with timeout
-            MAX_ATTEMPTS=30
+            MAX_ATTEMPTS=15
             ATTEMPTS=0
             while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
               echo "Checking application health... (Attempt $((ATTEMPTS + 1))/$MAX_ATTEMPTS)"
@@ -119,19 +119,19 @@ jobs:
             if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
               echo "Application failed to start within timeout period"
               echo "Recent application logs:"
-              sudo tail -n 200 /home/ubuntu/app.log
+              sudo tail -n 200 /tmp/app.log
               exit 1
             fi
             
             echo "Application startup completed successfully"
             echo "Recent application logs:"
-            sudo tail -n 100 /home/ubuntu/app.log
+            sudo tail -n 100 /tmp/app.log
             
             # Verify the process is still running
             if ! kill -0 $APP_PID 2>/dev/null; then
               echo "Application process is not running"
               echo "Recent application logs:"
-              sudo tail -n 200 /home/ubuntu/app.log
+              sudo tail -n 200 /tmp/app.log
               exit 1
             fi
             
