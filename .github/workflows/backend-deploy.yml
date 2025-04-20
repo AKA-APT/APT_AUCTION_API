@@ -95,11 +95,10 @@ jobs:
             export AWS_REGION=ap-northeast-2
             
             # Start the application
-            nohup sudo -E bash -c 'java \
+            nohup sudo setsid bash -c 'java \
             -jar /home/ubuntu/build/libs/auction-api.jar \
             --spring.profiles.active=prod \
-            > /home/ubuntu/app.log 2>&1' & \
-            disown
+            > /home/ubuntu/app.log 2>&1'
             
             # Store the PID
             APP_PID=$!
