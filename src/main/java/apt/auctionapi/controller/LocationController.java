@@ -58,7 +58,7 @@ public class LocationController {
             )
         )
     })
-    @PostMapping("/address")
+    @PostMapping
     public LocationResponse getAddressFromCoordinates(
         @Parameter(
             description = "위치 정보 요청",
