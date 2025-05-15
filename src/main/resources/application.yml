@@ -19,6 +19,10 @@ spring:
       schema: classpath:org/springframework/session/jdbc/schema-h2.sql
       table-name: SPRING_SESSION
     timeout: 3600  # 세션 만료시간 (초)
+
+kakao:
+  api:
+    key: ${KAKAO_REST_API_KEY}
 ---
 spring:
   config:
