@@ -78,7 +78,7 @@ public class KakaoPlaceController {
         @Max(value = 20000, message = "반경은 최대 20000m 이하여야 합니다.")
         int radius
     ) {
-        List<Place> places = kakaoPlaceService.searchPlaces(categories, latitude, longitude, radius);
+        List<Place> places = kakaoPlaceService.searchPlaces(categories, longitude, latitude, radius);
         return ResponseEntity.ok(SearchPlacesResponse.of(places));
     }
 }
