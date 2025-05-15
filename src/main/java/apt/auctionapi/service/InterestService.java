@@ -64,21 +64,5 @@ public class InterestService {
             .build());
     }
 
-    public boolean isInterestedAuctionByAuction(Member member, Auction auction, List<Interest> interests) {
-        if (member == null || auction == null) {
-            return false;
-        }
-        return interests.stream()
-            .map(Interest::getAuctionId)
-            .anyMatch(id -> id.equals(auction.getId()));
-    }
 
-    public boolean isTenderedAuctionByAuction(Member member, Auction auction, List<Tender> tenders) {
-        if (member == null || auction == null) {
-            return false;
-        }
-        return tenders.stream()
-            .map(Tender::getAuctionId)
-            .anyMatch(id -> id.equals(auction.getId()));
-    }
 }

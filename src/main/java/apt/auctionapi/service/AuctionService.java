@@ -24,23 +24,6 @@ public class AuctionService {
         return auction;
     }
 
-    public Integer getRuptureCount(Auction auction) {
-        if (auction == null || auction.getAuctionScheduleList() == null) {
-            return 0;
-        }
-
-        return (int)auction.getAuctionScheduleList().stream()
-            .filter(schedule -> "002".equals(schedule.getAuctionResultCode()))
-            .count();
-    }
-
-    public List<InvestmentTag> getInvestmentTags(Auction auction) {
-        if (auction == null) {
-            return List.of();
-        }
-        return InvestmentTag.from(auction);
-    }
-
     public List<InvestmentTag> getInvestmentTagsForAuction(String auctionId) {
         Auction auction = auctionRepository.findById(auctionId)
             .orElseThrow(() -> new IllegalArgumentException("Auction not found"));

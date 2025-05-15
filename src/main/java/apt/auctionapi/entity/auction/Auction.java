@@ -126,4 +126,16 @@ public class Auction {
             }
         }
     }
+
+    public boolean isRupturedMoreThan(int failedBidCount) {
+        if (this.getAuctionScheduleList() == null) {
+            return false;
+        }
+
+        long ruptureCount = getAuctionScheduleList().stream()
+            .filter(schedule -> "002".equals(schedule.getAuctionResultCode()))
+            .count();
+
+        return ruptureCount >= failedBidCount;
+    }
 }

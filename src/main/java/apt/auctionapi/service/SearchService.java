@@ -1,22 +1,10 @@
 package apt.auctionapi.service;
 
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.data.geo.Point;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
-import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +16,7 @@ import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
 import apt.auctionapi.entity.auction.Auction;
+import apt.auctionapi.repository.AuctionCustomRepository;
 import apt.auctionapi.repository.InterestRepository;
 import apt.auctionapi.repository.TenderRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,117 +26,56 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SearchService {
 
+    private final AuctionCustomRepository auctionCustomRepository;
     private final InterestRepository interestRepository;
     private final TenderRepository tenderRepository;
-    private final MongoTemplate mongoTemplate;
-    private final InterestService interestService;
-    private final AuctionService auctionService;
 
     public List<AuctionSummaryGroupedResponse> getAuctionsByLocationRange(
         SearchAuctionRequest filter,
         Member member
     ) {
-        Criteria criteria = buildCriteria(filter);
-        Aggregation aggregation = buildAggregation(criteria);
-        List<Auction> auctions = executeAggregation(aggregation);
+        List<Auction> auctions = auctionCustomRepository.findByLocationRange(filter);
         auctions.forEach(Auction::mappingCodeValues);
 
-        // 유찰 횟수 필터 적용
         if (filter.failedBidCount() != null && filter.failedBidCount() > 0) {
             auctions = filterByRuptureCount(auctions, filter.failedBidCount());
         }
 
-        // 투자 유형 태그 필터 적용
         if (filter.investmentTags() != null && !filter.investmentTags().isEmpty()) {
             auctions = filterByInvestmentTags(auctions, filter.investmentTags());
         }
 
-        if (member == null) {
-            return getAuctionSummaryGroupedResponses(auctions, null, Collections.emptyList(),
-                Collections.emptyList());
-        }
-
-        List<Interest> interests = interestRepository.findAllByMemberId(member.getId());
-        List<Tender> tenders = tenderRepository.findAllByMemberId(member.getId());
+        List<Interest> interests = member == null
+            ? Collections.emptyList()
+            : interestRepository.findAllByMemberId(member.getId());
+        List<Tender> tenders = member == null
+            ? Collections.emptyList()
+            : tenderRepository.findAllByMemberId(member.getId());
 
         return getAuctionSummaryGroupedResponses(auctions, member, interests, tenders);
     }
 
     private List<Auction> filterByRuptureCount(List<Auction> auctions, int failedBidCount) {
         return auctions.stream()
-            .filter(auction -> {
-                int ruptureCount = auctionService.getRuptureCount(auction);
-                return ruptureCount >= failedBidCount;
-            })
+            .filter(auction -> auction.isRupturedMoreThan(failedBidCount))
             .toList();
     }
 
     private List<Auction> filterByInvestmentTags(List<Auction> auctions, List<String> tagNames) {
         return auctions.stream()
             .filter(auction -> {
-                List<InvestmentTag> auctionTags = auctionService.getInvestmentTags(auction);
+                List<InvestmentTag> auctionTags = getInvestmentTags(auction);
                 return tagNames.stream().anyMatch(name ->
                     auctionTags.stream().anyMatch(tag -> tag.getName().equals(name)));
             })
             .toList();
     }
 
-    private Criteria buildCriteria(SearchAuctionRequest filter) {
-        Criteria locationCriteria = where("location")
-            .intersects(new GeoJsonPolygon(
-                new Point(filter.lbLng(), filter.lbLat()),
-                new Point(filter.rtLng(), filter.lbLat()),
-                new Point(filter.rtLng(), filter.rtLat()),
-                new Point(filter.lbLng(), filter.rtLat()),
-                new Point(filter.lbLng(), filter.lbLat())
-            ));
-
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        Criteria ongoingAuctionCriteria = where("gdsDspslDxdyLst")
-            .elemMatch(
-                where("auctnDxdyKndCd").is("01")
-                    .and("auctnDxdyRsltCd").is(null)
-            ).and("dspslGdsDxdyInfo.dspslDxdyYmd").gt(today);
-
-        Criteria notCancelledCriteria = new Criteria().orOperator(
-            where("isAuctionCancelled").is(false),
-            where("isAuctionCancelled").exists(false)
-        );
-
-        Criteria criteria = new Criteria().andOperator(
-            locationCriteria,
-            ongoingAuctionCriteria,
-            notCancelledCriteria
-        );
-
-        if (filter.minBidPrice() != null) {
-            criteria.and("dspslGdsDxdyInfo.fstPbancLwsDspslPrc").gte(filter.minBidPrice());
+    private List<InvestmentTag> getInvestmentTags(Auction auction) {
+        if (auction == null) {
+            return List.of();
         }
-
-        return criteria;
-    }
-
-    private Aggregation buildAggregation(Criteria criteria) {
-        ProjectionOperation projectStage = Aggregation.project()
-            .and("gdsDspslDxdyLst").as("gdsDspslDxdyLst")
-            .and("id").as("id")
-            .and("csBaseInfo").as("caseBaseInfo")
-            .and("location").as("location")
-            .and("dspslGdsDxdyInfo").as("dspslGdsDxdyInfo")
-            .and("isAuctionCancelled").as("isAuctionCancelled");
-
-        MatchOperation matchStage = Aggregation.match(criteria);
-
-        return Aggregation.newAggregation(
-            projectStage,
-            matchStage
-        );
-    }
-
-    private List<Auction> executeAggregation(Aggregation aggregation) {
-        AggregationResults<Auction> results = mongoTemplate.aggregate(
-            aggregation, "auctions", Auction.class);
-        return results.getMappedResults();
+        return InvestmentTag.from(auction);
     }
 
     private List<AuctionSummaryGroupedResponse> getAuctionSummaryGroupedResponses(
@@ -192,13 +120,31 @@ public class SearchService {
         List<Interest> interests,
         List<Tender> tenders
     ) {
-        List<InvestmentTag> investmentTags = auctionService.getInvestmentTags(auction);
+        List<InvestmentTag> investmentTags = getInvestmentTags(auction);
         return InnerAuctionSummaryResponse.of(
             auction,
-            interestService.isInterestedAuctionByAuction(member, auction, interests),
-            interestService.isTenderedAuctionByAuction(member, auction, tenders),
+            isInterestedAuctionByAuction(member, auction, interests),
+            isTenderedAuctionByAuction(member, auction, tenders),
             investmentTags
         );
+    }
+
+    private boolean isInterestedAuctionByAuction(Member member, Auction auction, List<Interest> interests) {
+        if (member == null || auction == null) {
+            return false;
+        }
+        return interests.stream()
+            .map(Interest::getAuctionId)
+            .anyMatch(id -> id.equals(auction.getId()));
+    }
+
+    private boolean isTenderedAuctionByAuction(Member member, Auction auction, List<Tender> tenders) {
+        if (member == null || auction == null) {
+            return false;
+        }
+        return tenders.stream()
+            .map(Tender::getAuctionId)
+            .anyMatch(id -> id.equals(auction.getId()));
     }
 
     private List<AuctionSummaryGroupedResponse> convertToGroupedResponses(
