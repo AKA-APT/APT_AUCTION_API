@@ -12,17 +12,24 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import apt.auctionapi.auth.AuthMember;
 import apt.auctionapi.controller.dto.request.AuctionSearchRequest;
+import apt.auctionapi.controller.dto.response.AuctionStatusResponse;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.InvestmentTagResponse;
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.Member;
+import apt.auctionapi.entity.Survey;
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.service.AuctionService;
+import apt.auctionapi.service.ImageService;
 import apt.auctionapi.service.InterestService;
 import apt.auctionapi.service.SearchService;
+import apt.auctionapi.service.StatusService;
+import apt.auctionapi.service.SurveyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +44,9 @@ public class AuctionController {
     private final AuctionService auctionService;
     private final InterestService interestService;
     private final SearchService searchService;
+    private final ImageService imageService;
+    private final StatusService statusService;
+    private final SurveyService surveyService;
 
     @Operation(summary = "경매 목록 조회", description = "지정한 범위 내의 경매 목록을 조회합니다.")
     @GetMapping
@@ -97,5 +107,24 @@ public class AuctionController {
             .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "경매 이미지 조회", description = "지정한 경매 ID에 해당하는 경매의 이미지 리스트를 조회합니다.")
+    @GetMapping("/{id}/images")
+    public JsonNode getAuctionImages(@PathVariable String id) {
+        return imageService.getAuctionImages(id);
+    }
+
+    @Operation(summary = "경매 상태 조회", description = "지정한 경매 ID에 해당하는 경매 상태를 조회합니다.")
+    @GetMapping("/{id}/status")
+    public ResponseEntity<AuctionStatusResponse> getAuctionStatus(@PathVariable String id) {
+        return ResponseEntity.ok(statusService.getAuctionStatus(id));
+    }
+
+    @Operation(summary = "현황조사서 조회", description = "현재 로그인한 회원의 정보를 조회합니다.")
+    @GetMapping("/{id}/surveys")
+    public ResponseEntity<Survey> getSurveyById(@PathVariable String id) {
+        Survey survey = surveyService.getSurveyById(id);
+        return ResponseEntity.ok(survey);
     }
 }

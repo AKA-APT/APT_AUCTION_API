@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "위치 정보", description = "위치 정보 관련 API")
 @RestController
-@RequestMapping("/api/v1/location")
+@RequestMapping("/api/v1/addresses")
 @RequiredArgsConstructor
 public class LocationController {
 
@@ -37,12 +37,13 @@ public class LocationController {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\n" +
-                        "  \"sido\": \"서울특별시\",\n" +
-                        "  \"sigungu\": \"강남구\",\n" +
-                        "  \"dong\": \"삼성동\",\n" +
-                        "  \"fullAddress\": \"서울특별시 강남구 삼성동\"\n" +
-                        "}"
+                    value = """
+                        {
+                          "sido": "서울특별시",
+                          "sigungu": "강남구",
+                          "dong": "삼성동",
+                          "fullAddress": "서울특별시 강남구 삼성동"
+                        }"""
                 )
             )
         ),
@@ -65,10 +66,11 @@ public class LocationController {
         )
         @RequestBody
         @Schema(
-            example = "{\n" +
-                "  \"latitude\": 37.5665,\n" +
-                "  \"longitude\": 126.9780\n" +
-                "}"
+            example = """
+                {
+                  "latitude": 37.5665,
+                  "longitude": 126.9780
+                }"""
         )
         LocationRequest request
     ) {
