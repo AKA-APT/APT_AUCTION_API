@@ -7,7 +7,7 @@ import java.util.Objects;
 import apt.auctionapi.domain.InvestmentTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record AuctionSearchRequest(
+public record SearchAuctionRequest(
     @Schema(description = "좌측 하단 위도", example = "37.5709061")
     double lbLat,
 
@@ -38,7 +38,7 @@ public record AuctionSearchRequest(
     List<String> investmentTags
 ) {
     // 기본값을 위한 컴팩트 생성자
-    public AuctionSearchRequest {
+    public SearchAuctionRequest {
         if (failedBidCount == null) {
             failedBidCount = 0;
         }

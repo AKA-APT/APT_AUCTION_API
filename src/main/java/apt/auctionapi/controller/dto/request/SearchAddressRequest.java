@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-public record LocationRequest(
+public record SearchAddressRequest(
     @NotNull(message = "경도는 필수입니다")
     @Min(value = 124, message = "경도는 124도 이상이어야 합니다")
     @Max(value = 131, message = "경도는 131도 이하여야 합니다")

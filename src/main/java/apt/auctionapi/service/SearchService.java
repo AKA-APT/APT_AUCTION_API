@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import apt.auctionapi.controller.dto.request.AuctionSearchRequest;
+import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse;
 import apt.auctionapi.domain.InvestmentTag;
@@ -44,7 +44,7 @@ public class SearchService {
     private final AuctionService auctionService;
 
     public List<AuctionSummaryGroupedResponse> getAuctionsByLocationRange(
-        AuctionSearchRequest filter,
+        SearchAuctionRequest filter,
         Member member
     ) {
         Criteria criteria = buildCriteria(filter);
@@ -92,7 +92,7 @@ public class SearchService {
             .toList();
     }
 
-    private Criteria buildCriteria(AuctionSearchRequest filter) {
+    private Criteria buildCriteria(SearchAuctionRequest filter) {
         Criteria locationCriteria = where("location")
             .intersects(new GeoJsonPolygon(
                 new Point(filter.lbLng(), filter.lbLat()),

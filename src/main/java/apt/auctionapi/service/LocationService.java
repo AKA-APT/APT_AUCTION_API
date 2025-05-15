@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 
 import apt.auctionapi.client.VWorldApiClient;
 import apt.auctionapi.client.dto.VWorldResponse;
-import apt.auctionapi.controller.dto.request.LocationRequest;
-import apt.auctionapi.controller.dto.response.LocationResponse;
+import apt.auctionapi.controller.dto.request.SearchAddressRequest;
+import apt.auctionapi.controller.dto.response.SearchAddressResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -14,7 +14,7 @@ public class LocationService {
 
     private final VWorldApiClient vWorldApiClient;
 
-    public LocationResponse getAddressFromCoordinates(LocationRequest request) {
+    public SearchAddressResponse getAddressFromCoordinates(SearchAddressRequest request) {
         String point = String.format("POINT(%f %f)", request.longitude(), request.latitude());
 
         VWorldResponse vWorldResponse = vWorldApiClient.getLocationInfo(point);
@@ -27,7 +27,7 @@ public class LocationService {
             vWorldResponse.sigungu(),
             vWorldResponse.dong());
 
-        return new LocationResponse(
+        return new SearchAddressResponse(
             vWorldResponse.sido(),
             vWorldResponse.sigungu(),
             vWorldResponse.dong(),

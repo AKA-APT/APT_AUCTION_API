@@ -1,6 +1,6 @@
 package apt.auctionapi.controller.dto.response;
 
-public record LocationResponse(
+public record SearchAddressResponse(
     String sido,        // 시도
     String sigungu,     // 시군구
     String dong,        // 읍면동

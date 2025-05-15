@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import apt.auctionapi.auth.AuthMember;
-import apt.auctionapi.controller.dto.request.AuctionSearchRequest;
+import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
 import apt.auctionapi.controller.dto.response.AuctionStatusResponse;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.InvestmentTagResponse;
@@ -51,7 +51,7 @@ public class AuctionController {
     @Operation(summary = "경매 목록 조회", description = "지정한 범위 내의 경매 목록을 조회합니다.")
     @GetMapping
     public ResponseEntity<List<AuctionSummaryGroupedResponse>> getAuctionsByLocation(
-        @ParameterObject @ModelAttribute AuctionSearchRequest filter,
+        @ParameterObject @ModelAttribute SearchAuctionRequest filter,
         @AuthMember(required = false) Member member
     ) {
         return ResponseEntity.ok(

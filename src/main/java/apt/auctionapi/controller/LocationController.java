@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import apt.auctionapi.controller.dto.request.LocationRequest;
-import apt.auctionapi.controller.dto.response.LocationResponse;
+import apt.auctionapi.controller.dto.request.SearchAddressRequest;
+import apt.auctionapi.controller.dto.response.SearchAddressResponse;
 import apt.auctionapi.service.LocationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -59,7 +59,7 @@ public class LocationController {
         )
     })
     @PostMapping
-    public LocationResponse getAddressFromCoordinates(
+    public SearchAddressResponse getAddressFromCoordinates(
         @Parameter(
             description = "위치 정보 요청",
             required = true
@@ -72,7 +72,7 @@ public class LocationController {
                   "longitude": 126.9780
                 }"""
         )
-        LocationRequest request
+        SearchAddressRequest request
     ) {
         return locationService.getAddressFromCoordinates(request);
     }
