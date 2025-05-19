@@ -1,15 +1,11 @@
 package apt.auctionapi.domain;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.sources.AuctionObject;
 import apt.auctionapi.entity.auction.sources.DisposalGoodsExecutionInfo;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 부동산 투자 유형 (Investment Tag)
@@ -80,101 +76,93 @@ public enum InvestmentTag {
             return Collections.emptyList();
         }
 
-        // 첫 번째 경매 대상 물건 정보 가져오기
         AuctionObject auctionObject = auction.getAuctionObjectList().getFirst();
+        // 태그별 점수 맵
+        Map<InvestmentTag, Integer> tagScores = new EnumMap(InvestmentTag.class);
 
-        // 추천 태그를 저장할 Set (중복 방지)
+        // 1. 물건 종류 기반 태그 (가중치 2)
+        String propertyType = auctionObject.getPropertyType();
+        for (InvestmentTag tag : getRecommendedTagsByPropertyType(propertyType)) {
+            tagScores.put(tag, tagScores.getOrDefault(tag, 0) + 2);
+        }
 
-        // 1. 물건 종류 기반 태그 추가
-        String propertyType = auctionObject.getPropertyType(); // rletDvsDts 필드
-        Set<InvestmentTag> recommendedTags = new HashSet<>(getRecommendedTagsByPropertyType(propertyType));
-
-        // 2. 가격 기반 태그 추가
-        BigDecimal appraisedValue = auctionObject.getAppraisedValue(); // aeeEvlAmt 필드
+        // 2. 가격 기반 태그 (가중치 1)
+        BigDecimal appraisedValue = auctionObject.getAppraisedValue();
         if (appraisedValue != null) {
             if (appraisedValue.compareTo(new BigDecimal("1000000000")) > 0) { // 10억 이상
-                recommendedTags.add(PREMIUM_RESIDENTIAL);
-                recommendedTags.add(LONG_TERM_INVESTMENT);
+                tagScores.put(PREMIUM_RESIDENTIAL, tagScores.getOrDefault(PREMIUM_RESIDENTIAL, 0) + 1);
+                tagScores.put(LONG_TERM_INVESTMENT, tagScores.getOrDefault(LONG_TERM_INVESTMENT, 0) + 1);
             } else if (appraisedValue.compareTo(new BigDecimal("300000000")) < 0) { // 3억 미만
-                recommendedTags.add(GAP_INVESTMENT);
-                recommendedTags.add(SMALL_REAL_ESTATE);
+                tagScores.put(GAP_INVESTMENT, tagScores.getOrDefault(GAP_INVESTMENT, 0) + 1);
+                tagScores.put(SMALL_REAL_ESTATE, tagScores.getOrDefault(SMALL_REAL_ESTATE, 0) + 1);
             }
         }
 
-        // 3. 주소 기반 태그 추가
-        String address = auctionObject.getAddress(); // userPrintSt 필드
+        // 3. 주소 기반 태그 (가중치 1)
+        String address = auctionObject.getAddress();
         if (address != null) {
-            // 재개발/재건축 지역 확인
             if (address.contains("재개발") || address.contains("정비구역")) {
-                recommendedTags.add(REDEVELOPMENT);
+                tagScores.put(REDEVELOPMENT, tagScores.getOrDefault(REDEVELOPMENT, 0) + 1);
             }
-
-            // 상업 지역 확인
             if (address.contains("상업지구") || address.contains("상업지역")) {
-                recommendedTags.add(COMMERCIAL_DISTRICT_DEVELOPMENT);
+                tagScores.put(COMMERCIAL_DISTRICT_DEVELOPMENT, tagScores.getOrDefault(COMMERCIAL_DISTRICT_DEVELOPMENT, 0) + 1);
             }
-
-            // 산업 단지 확인
             if (address.contains("산업단지") || address.contains("공단")) {
-                recommendedTags.add(FACTORY_INDUSTRIAL_COMPLEX);
+                tagScores.put(FACTORY_INDUSTRIAL_COMPLEX, tagScores.getOrDefault(FACTORY_INDUSTRIAL_COMPLEX, 0) + 1);
             }
         }
 
-        // 4. 건물 구조 기반 태그 추가
-        String buildingStructure = auctionObject.getBuildingStructure(); // pjbBuldList 필드
+        // 4. 건물 구조 기반 태그 (가중치 1)
+        String buildingStructure = auctionObject.getBuildingStructure();
         if (buildingStructure != null && (buildingStructure.contains("한옥") || buildingStructure.contains("목조"))) {
-            recommendedTags.add(UNIQUE_REAL_ESTATE);
-            recommendedTags.add(ECO_FRIENDLY);
+            tagScores.put(UNIQUE_REAL_ESTATE, tagScores.getOrDefault(UNIQUE_REAL_ESTATE, 0) + 1);
+            tagScores.put(ECO_FRIENDLY, tagScores.getOrDefault(ECO_FRIENDLY, 0) + 1);
         }
 
-        // 5. 유찰 횟수 기반 태그 추가
+        // 5. 유찰 횟수 기반 태그 (가중치 1)
         int ruptureCount = getRuptureCount(auction);
         if (ruptureCount >= 3) {
-            recommendedTags.add(HIGH_RISK);
-            recommendedTags.add(SHORT_TERM_INVESTMENT);
+            tagScores.put(HIGH_RISK, tagScores.getOrDefault(HIGH_RISK, 0) + 1);
+            tagScores.put(SHORT_TERM_INVESTMENT, tagScores.getOrDefault(SHORT_TERM_INVESTMENT, 0) + 1);
         } else if (ruptureCount == 0) {
-            recommendedTags.add(LOW_RISK);
+            tagScores.put(LOW_RISK, tagScores.getOrDefault(LOW_RISK, 0) + 1);
         }
 
-        // 6. 토지 이용 코드 기반 태그 추가
-        String landUseCode = auctionObject.getLandUseCode(); // lclDspslGdsLstUsgCd 필드
+        // 6. 토지 이용 코드 기반 태그 (가중치 1)
+        String landUseCode = auctionObject.getLandUseCode();
         if (landUseCode != null) {
-            // 농지 코드 확인 (예시 코드, 실제 코드는 시스템에 맞게 수정 필요)
             if (landUseCode.startsWith("2")) {
-                recommendedTags.add(FARMLAND_INVESTMENT);
-            }
-            // 임야 코드 확인
-            else if (landUseCode.startsWith("3")) {
-                recommendedTags.add(FOREST_INVESTMENT);
+                tagScores.put(FARMLAND_INVESTMENT, tagScores.getOrDefault(FARMLAND_INVESTMENT, 0) + 1);
+            } else if (landUseCode.startsWith("3")) {
+                tagScores.put(FOREST_INVESTMENT, tagScores.getOrDefault(FOREST_INVESTMENT, 0) + 1);
             }
         }
 
-        // 7. 사건 종류 기반 태그 추가
+        // 7. 사건 종류 기반 태그 (가중치 1)
         if (auction.getCaseBaseInfo() != null) {
-            String caseType = auction.getCaseBaseInfo().getCaseType(); // csNm 필드
+            String caseType = auction.getCaseBaseInfo().getCaseType();
             if (caseType != null && caseType.contains("임의경매")) {
-                recommendedTags.add(HIGH_RISK);
+                tagScores.put(HIGH_RISK, tagScores.getOrDefault(HIGH_RISK, 0) + 1);
             }
-
         }
 
-        // 8. 경매 진행 정보 기반 태그 추가
+        // 8. 경매 진행 정보 기반 태그 (가중치 1)
         if (auction.getDisposalGoodsExecutionInfo() != null) {
             DisposalGoodsExecutionInfo executionInfo = auction.getDisposalGoodsExecutionInfo();
-
-            // 낙찰가와 감정가 비교로 갭 투자 가능성 확인
             if (executionInfo.getFirstAuctionPrice() != null &&
-                executionInfo.getAppraisedValue() != null &&
-                executionInfo.getFirstAuctionPrice().compareTo(
-                    executionInfo.getAppraisedValue().multiply(new BigDecimal("0.7"))) < 0) {
-                recommendedTags.add(GAP_INVESTMENT);
+                    executionInfo.getAppraisedValue() != null &&
+                    executionInfo.getFirstAuctionPrice().compareTo(
+                            executionInfo.getAppraisedValue().multiply(new BigDecimal("0.7"))) < 0) {
+                tagScores.put(GAP_INVESTMENT, tagScores.getOrDefault(GAP_INVESTMENT, 0) + 1);
             }
         }
 
-        // 최대 5개까지만 반환 (우선순위에 따라 정렬 가능)
-        return recommendedTags.stream()
-            .limit(5)
-            .toList();
+        // 점수 높은 순으로 정렬 후 최대 5개 반환
+        return tagScores.entrySet().stream()
+                .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue()))
+                .map(java.util.Map.Entry::getKey)
+                .limit(5)
+                .toList();
     }
 
     // 기존 유찰 횟수 계산 메서드
@@ -183,9 +171,9 @@ public enum InvestmentTag {
             return 0; // auction 또는 일정 리스트가 없으면 0 반환
         }
 
-        return (int)auction.getAuctionScheduleList().stream()
-            .filter(schedule -> "002".equals(schedule.getAuctionResultCode())) // 유찰 코드 필터링
-            .count();
+        return (int) auction.getAuctionScheduleList().stream()
+                .filter(schedule -> "002".equals(schedule.getAuctionResultCode())) // 유찰 코드 필터링
+                .count();
     }
 
     // 물건 종류에 따른 추천 태그 반환
@@ -196,16 +184,16 @@ public enum InvestmentTag {
 
         return switch (propertyType) {
             case "아파트" -> Arrays.asList(SELF_OCCUPANCY, LONG_TERM_INVESTMENT, GAP_INVESTMENT, PREMIUM_RESIDENTIAL,
-                RECONSTRUCTION);
+                    RECONSTRUCTION);
             case "오피스텔" -> Arrays.asList(SMALL_REAL_ESTATE, RENTAL_BUSINESS, SHORT_TERM_INVESTMENT, INCOME_GENERATING,
-                GAP_INVESTMENT);
+                    GAP_INVESTMENT);
             case "상가", "상가건물" ->
-                Arrays.asList(INCOME_GENERATING, COMMERCIAL_REAL_ESTATE, SPECIAL_COMMERCIAL_REAL_ESTATE,
-                    COMMERCIAL_DISTRICT_DEVELOPMENT);
+                    Arrays.asList(INCOME_GENERATING, COMMERCIAL_REAL_ESTATE, SPECIAL_COMMERCIAL_REAL_ESTATE,
+                            COMMERCIAL_DISTRICT_DEVELOPMENT);
             case "토지", "대지" ->
-                Arrays.asList(LAND_INVESTMENT, REDEVELOPMENT, ECO_FRIENDLY, COMMERCIAL_DISTRICT_DEVELOPMENT);
+                    Arrays.asList(LAND_INVESTMENT, REDEVELOPMENT, ECO_FRIENDLY, COMMERCIAL_DISTRICT_DEVELOPMENT);
             case "단독주택", "주택" ->
-                Arrays.asList(SELF_OCCUPANCY, REDEVELOPMENT, RECONSTRUCTION, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
+                    Arrays.asList(SELF_OCCUPANCY, REDEVELOPMENT, RECONSTRUCTION, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
             case "다가구주택", "다세대주택" -> Arrays.asList(RENTAL_BUSINESS, INCOME_GENERATING, GAP_INVESTMENT, SHARED_HOUSING);
             case "빌라" -> Arrays.asList(SELF_OCCUPANCY, RENTAL_BUSINESS, GAP_INVESTMENT, SMALL_REAL_ESTATE);
             case "연립주택" -> Arrays.asList(SELF_OCCUPANCY, RENTAL_BUSINESS, RECONSTRUCTION, SMALL_REAL_ESTATE);
@@ -217,14 +205,14 @@ public enum InvestmentTag {
             case "농지", "농지용지", "전", "답" -> Arrays.asList(FARMLAND_INVESTMENT, ECO_FRIENDLY, LAND_INVESTMENT);
             case "임야", "산" -> Arrays.asList(FOREST_INVESTMENT, ECO_FRIENDLY, UNIQUE_REAL_ESTATE);
             case "펜션", "리조트" ->
-                Arrays.asList(THEMED_REAL_ESTATE, HOTEL_ACCOMMODATION, INCOME_GENERATING, UNIQUE_REAL_ESTATE);
+                    Arrays.asList(THEMED_REAL_ESTATE, HOTEL_ACCOMMODATION, INCOME_GENERATING, UNIQUE_REAL_ESTATE);
             case "숙박시설", "모텔", "호텔" -> Arrays.asList(HOTEL_ACCOMMODATION, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
             case "실버타운", "요양시설" -> Arrays.asList(THEMED_REAL_ESTATE, INCOME_GENERATING, PENSION_TYPE);
             case "한옥" -> Arrays.asList(UNIQUE_REAL_ESTATE, THEMED_REAL_ESTATE, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
             case "캠핑장" -> Arrays.asList(UNIQUE_REAL_ESTATE, THEMED_REAL_ESTATE, INCOME_GENERATING);
             case "골프장", "레저시설" -> Arrays.asList(UNIQUE_REAL_ESTATE, HIGH_RISK, INCOME_GENERATING);
             case "병원", "의료시설" ->
-                Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
+                    Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
             case "학원", "교육시설" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
             case "카페", "음식점" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, SMALL_REAL_ESTATE);
             case "프랜차이즈" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
@@ -235,13 +223,13 @@ public enum InvestmentTag {
             case "재건축", "재건축지역" -> Arrays.asList(RECONSTRUCTION, HIGH_RISK, SHORT_TERM_INVESTMENT);
             case "태양광발전소", "태양광부지" -> Arrays.asList(ECO_FRIENDLY, INCOME_GENERATING, FARMLAND_INVESTMENT);
             case "상업지구", "상업지역" ->
-                Arrays.asList(COMMERCIAL_DISTRICT_DEVELOPMENT, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
+                    Arrays.asList(COMMERCIAL_DISTRICT_DEVELOPMENT, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
             case "주상복합" -> Arrays.asList(SELF_OCCUPANCY, COMMERCIAL_REAL_ESTATE, PREMIUM_RESIDENTIAL);
             case "지식산업센터", "아파트형공장" ->
-                Arrays.asList(FACTORY_INDUSTRIAL_COMPLEX, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
+                    Arrays.asList(FACTORY_INDUSTRIAL_COMPLEX, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
             default ->
                 // 기본 추천 태그 (모든 부동산 유형에 적용 가능한 일반적인 태그)
-                Arrays.asList(INCOME_GENERATING, LONG_TERM_INVESTMENT, SHORT_TERM_INVESTMENT, LOW_RISK, HIGH_RISK);
+                    Arrays.asList(INCOME_GENERATING, LONG_TERM_INVESTMENT, SHORT_TERM_INVESTMENT, LOW_RISK, HIGH_RISK);
         };
     }
 
