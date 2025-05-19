@@ -19,7 +19,7 @@ public enum InvestmentTag {
     SELF_OCCUPANCY(6, "자가우선", "실거주 목적이 우선, 이후 가치 상승 고려"),
     RENTAL_BUSINESS(7, "임대사업", "다세대, 원룸, 오피스텔을 다수 보유하여 안정적 수익 창출"),
     GOVERNMENT_SUPPORTED(8, "정부지원형", "공공 임대주택, 장기전세주택 등 정책적 혜택을 활용"),
-    HIGH_RISK(9, "고위험", "변동성이 높은 지역과 부동산에 투자"),
+    HIGH_RISK(9, "변동성", "변동성이 높은 지역과 부동산에 투자"),
     SHORT_TERM_INVESTMENT(10, "단기투자", "단기간 내 차익 실현을 목표로 하는 투자"),
     GAP_INVESTMENT(11, "갭투자", "적은 자본으로 레버리지를 활용해 매수"),
     REDEVELOPMENT(12, "재개발", "신축 예정 지역을 미리 선점하여 투자"),
