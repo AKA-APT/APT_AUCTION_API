@@ -2,10 +2,12 @@ package apt.auctionapi.domain;
 
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.sources.AuctionObject;
+import apt.auctionapi.entity.auction.sources.CaseBaseInfo;
 import apt.auctionapi.entity.auction.sources.DisposalGoodsExecutionInfo;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * 부동산 투자 유형 (Investment Tag)
@@ -66,171 +68,497 @@ public enum InvestmentTag {
     }
 
     /**
-     * Auction 객체로부터 적합한 투자 유형 태그 목록을 반환합니다.
-     *
-     * @param auction 분석할 경매 객체
-     * @return 추천 투자 유형 태그 목록 (최대 5개)
+     * 태그별 판별 기준을 담는 TagRule 클래스
      */
-    public static List<InvestmentTag> from(Auction auction) {
-        if (auction == null || auction.getAuctionObjectList() == null || auction.getAuctionObjectList().isEmpty()) {
-            return Collections.emptyList();
+    private static class TagRule {
+        private final String property; // 설명용
+        private final Predicate<Auction> condition;
+        private final int weight;
+
+        public TagRule(String property, Predicate<Auction> condition, int weight) {
+            this.property = property;
+            this.condition = condition;
+            this.weight = weight;
         }
 
-        AuctionObject auctionObject = auction.getAuctionObjectList().getFirst();
-        // 태그별 점수 맵
-        Map<InvestmentTag, Integer> tagScores = new EnumMap(InvestmentTag.class);
-
-        // 1. 물건 종류 기반 태그 (가중치 2)
-        String propertyType = auctionObject.getPropertyType();
-        for (InvestmentTag tag : getRecommendedTagsByPropertyType(propertyType)) {
-            tagScores.put(tag, tagScores.getOrDefault(tag, 0) + 2);
+        public boolean test(Auction auction) {
+            return condition.test(auction);
         }
 
-        // 2. 가격 기반 태그 (가중치 1)
-        BigDecimal appraisedValue = auctionObject.getAppraisedValue();
-        if (appraisedValue != null) {
-            if (appraisedValue.compareTo(new BigDecimal("1000000000")) > 0) { // 10억 이상
-                tagScores.put(PREMIUM_RESIDENTIAL, tagScores.getOrDefault(PREMIUM_RESIDENTIAL, 0) + 1);
-                tagScores.put(LONG_TERM_INVESTMENT, tagScores.getOrDefault(LONG_TERM_INVESTMENT, 0) + 1);
-            } else if (appraisedValue.compareTo(new BigDecimal("300000000")) < 0) { // 3억 미만
-                tagScores.put(GAP_INVESTMENT, tagScores.getOrDefault(GAP_INVESTMENT, 0) + 1);
-                tagScores.put(SMALL_REAL_ESTATE, tagScores.getOrDefault(SMALL_REAL_ESTATE, 0) + 1);
-            }
+        public int getWeight() {
+            return weight;
         }
-
-        // 3. 주소 기반 태그 (가중치 1)
-        String address = auctionObject.getAddress();
-        if (address != null) {
-            if (address.contains("재개발") || address.contains("정비구역")) {
-                tagScores.put(REDEVELOPMENT, tagScores.getOrDefault(REDEVELOPMENT, 0) + 1);
-            }
-            if (address.contains("상업지구") || address.contains("상업지역")) {
-                tagScores.put(COMMERCIAL_DISTRICT_DEVELOPMENT, tagScores.getOrDefault(COMMERCIAL_DISTRICT_DEVELOPMENT, 0) + 1);
-            }
-            if (address.contains("산업단지") || address.contains("공단")) {
-                tagScores.put(FACTORY_INDUSTRIAL_COMPLEX, tagScores.getOrDefault(FACTORY_INDUSTRIAL_COMPLEX, 0) + 1);
-            }
-        }
-
-        // 4. 건물 구조 기반 태그 (가중치 1)
-        String buildingStructure = auctionObject.getBuildingStructure();
-        if (buildingStructure != null && (buildingStructure.contains("한옥") || buildingStructure.contains("목조"))) {
-            tagScores.put(UNIQUE_REAL_ESTATE, tagScores.getOrDefault(UNIQUE_REAL_ESTATE, 0) + 1);
-            tagScores.put(ECO_FRIENDLY, tagScores.getOrDefault(ECO_FRIENDLY, 0) + 1);
-        }
-
-        // 5. 유찰 횟수 기반 태그 (가중치 1)
-        int ruptureCount = getRuptureCount(auction);
-        if (ruptureCount >= 3) {
-            tagScores.put(HIGH_RISK, tagScores.getOrDefault(HIGH_RISK, 0) + 1);
-            tagScores.put(SHORT_TERM_INVESTMENT, tagScores.getOrDefault(SHORT_TERM_INVESTMENT, 0) + 1);
-        } else if (ruptureCount == 0) {
-            tagScores.put(LOW_RISK, tagScores.getOrDefault(LOW_RISK, 0) + 1);
-        }
-
-        // 6. 토지 이용 코드 기반 태그 (가중치 1)
-        String landUseCode = auctionObject.getLandUseCode();
-        if (landUseCode != null) {
-            if (landUseCode.startsWith("2")) {
-                tagScores.put(FARMLAND_INVESTMENT, tagScores.getOrDefault(FARMLAND_INVESTMENT, 0) + 1);
-            } else if (landUseCode.startsWith("3")) {
-                tagScores.put(FOREST_INVESTMENT, tagScores.getOrDefault(FOREST_INVESTMENT, 0) + 1);
-            }
-        }
-
-        // 7. 사건 종류 기반 태그 (가중치 1)
-        if (auction.getCaseBaseInfo() != null) {
-            String caseType = auction.getCaseBaseInfo().getCaseType();
-            if (caseType != null && caseType.contains("임의경매")) {
-                tagScores.put(HIGH_RISK, tagScores.getOrDefault(HIGH_RISK, 0) + 1);
-            }
-        }
-
-        // 8. 경매 진행 정보 기반 태그 (가중치 1)
-        if (auction.getDisposalGoodsExecutionInfo() != null) {
-            DisposalGoodsExecutionInfo executionInfo = auction.getDisposalGoodsExecutionInfo();
-            if (executionInfo.getFirstAuctionPrice() != null &&
-                    executionInfo.getAppraisedValue() != null &&
-                    executionInfo.getFirstAuctionPrice().compareTo(
-                            executionInfo.getAppraisedValue().multiply(new BigDecimal("0.7"))) < 0) {
-                tagScores.put(GAP_INVESTMENT, tagScores.getOrDefault(GAP_INVESTMENT, 0) + 1);
-            }
-        }
-
-        // 점수 높은 순으로 정렬 후 최대 5개 반환
-        return tagScores.entrySet().stream()
-                .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue()))
-                .map(java.util.Map.Entry::getKey)
-                .limit(5)
-                .toList();
     }
 
-    // 기존 유찰 횟수 계산 메서드
-    private static Integer getRuptureCount(Auction auction) {
-        if (auction == null || auction.getAuctionScheduleList() == null) {
-            return 0; // auction 또는 일정 리스트가 없으면 0 반환
+    /**
+     * 태그별 판별 기준(속성, 조건, 가중치) 리스트
+     */
+    private static final Map<InvestmentTag, List<TagRule>> tagRules = Map.ofEntries(
+            Map.entry(INCOME_GENERATING, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("오피스텔", "상가", "오피스", "원룸", "다세대", "상가건물", "근린생활시설").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("appraisedValue", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(v -> v.compareTo(new BigDecimal("300000000")) >= 0 && v.compareTo(new BigDecimal("1000000000")) <= 0)
+                            .orElse(false), 1),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("역세권") || addr.contains("상권"))
+                            .orElse(false), 1),
+                    new TagRule("buildingStructure", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getBuildingStructure)
+                            .map(bs -> bs.contains("오피스") || bs.contains("상가") || bs.contains("오피스텔"))
+                            .orElse(false), 1),
+                    new TagRule("임대차계약존재여부", auction -> false, 2), // TODO: 임대차계약 정보 추가시 구현
+                    new TagRule("월세/리스수익", auction -> false, 2) // TODO: 월세/리스 정보 추가시 구현
+            )),
+            Map.entry(LONG_TERM_INVESTMENT, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("아파트", "주택", "토지", "프리미엄 주거").contains(type))
+                            .orElse(false), 2),
+                    new TagRule("appraisedValue", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(v -> v.compareTo(new BigDecimal("1000000000")) > 0)
+                            .orElse(false), 2),
+                    new TagRule("caseType", auction -> Optional.ofNullable(auction.getCaseBaseInfo())
+                            .map(CaseBaseInfo::getCaseType)
+                            .map(type -> !type.contains("강제경매"))
+                            .orElse(false), 1),
+                    new TagRule("유찰횟수", auction -> Optional.ofNullable(auction.getAuctionScheduleList())
+                            .map(list -> list.stream().filter(s -> "002".equals(s.getAuctionResultCode())).count())
+                            .map(cnt -> cnt <= 1)
+                            .orElse(false), 1),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("신도시") || addr.contains("개발예정"))
+                            .orElse(false), 1)
+            )),
+            Map.entry(HIGH_RISK, List.of(
+                    new TagRule("유찰횟수", auction -> Optional.ofNullable(auction.getAuctionScheduleList())
+                            .map(list -> list.stream().filter(s -> "002".equals(s.getAuctionResultCode())).count())
+                            .map(cnt -> cnt >= 3)
+                            .orElse(false), 2),
+                    new TagRule("caseType", auction -> Optional.ofNullable(auction.getCaseBaseInfo())
+                            .map(CaseBaseInfo::getCaseType)
+                            .map(type -> type.contains("임의경매"))
+                            .orElse(false), 2),
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("공장", "창고", "임야", "레저시설").contains(type))
+                            .orElse(false), 1),
+                    new TagRule("appraisedValue", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(v -> v.compareTo(new BigDecimal("300000000")) < 0 || v.compareTo(new BigDecimal("30000000000")) > 0)
+                            .orElse(false), 1)
+            )),
+            Map.entry(LOW_RISK, List.of(
+                    new TagRule("유찰횟수", auction -> Optional.ofNullable(auction.getAuctionScheduleList())
+                            .map(list -> list.stream().filter(s -> "002".equals(s.getAuctionResultCode())).count())
+                            .map(cnt -> cnt == 0)
+                            .orElse(false), 2),
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("아파트", "오피스텔", "프리미엄 주거").contains(type))
+                            .orElse(false), 1)
+            )),
+            Map.entry(PREMIUM_RESIDENTIAL, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> type.contains("프리미엄") || type.contains("고급") || type.contains("아파트"))
+                            .orElse(false), 2),
+                    new TagRule("appraisedValue", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(v -> v.compareTo(new BigDecimal("1000000000")) > 0)
+                            .orElse(false), 2)
+            )),
+            Map.entry(SELF_OCCUPANCY, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("아파트", "주택", "오피스텔").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("학군") || addr.contains("교통"))
+                            .orElse(false), 2),
+                    new TagRule("근저당권존재여부", auction -> false, 1) // TODO: 권리 분석 정보 추가 시 구현
+            )),
+            Map.entry(RENTAL_BUSINESS, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("다세대", "원룸", "오피스텔", "상가건물").contains(type))
+                            .orElse(false), 3),
+                    // 아래의 totalArea 속성은 AuctionObject에 없는 속성이므로 제거하거나 대체합니다
+                    // appraisedValue 필드로 대체하여 일정 규모 이상의 건물 판단
+                    new TagRule("건물규모", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(value -> value.compareTo(new BigDecimal("300000000")) >= 0)
+                            .orElse(false), 2),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("대학가") || addr.contains("산업단지") || addr.contains("역세권"))
+                            .orElse(false), 2)
+            )),
+            Map.entry(GOVERNMENT_SUPPORTED, List.of(
+                    new TagRule("caseType", auction -> Optional.ofNullable(auction.getCaseBaseInfo())
+                            .map(CaseBaseInfo::getCaseType)
+                            .map(type -> type.contains("공공임대") || type.contains("장기전세"))
+                            .orElse(false), 3)
+            )),
+            Map.entry(SHORT_TERM_INVESTMENT, List.of(
+                    new TagRule("유찰횟수", auction -> Optional.ofNullable(auction.getAuctionScheduleList())
+                            .map(list -> list.stream().filter(s -> "002".equals(s.getAuctionResultCode())).count())
+                            .map(cnt -> cnt == 1)
+                            .orElse(false), 2),
+                    new TagRule("appraisedValue", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(v -> v.compareTo(new BigDecimal("100000000")) >= 0 && v.compareTo(new BigDecimal("500000000")) <= 0)
+                            .orElse(false), 2),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("급매") || addr.contains("시세차익"))
+                            .orElse(false), 1)
+            )),
+            Map.entry(GAP_INVESTMENT, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("아파트", "오피스텔").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("전세가율", auction -> false, 3), // TODO: 전세가 정보 추가 시 구현
+                    new TagRule("appraisedValue", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(v -> v.compareTo(new BigDecimal("300000000")) >= 0 && v.compareTo(new BigDecimal("800000000")) <= 0)
+                            .orElse(false), 2)
+            )),
+            Map.entry(REDEVELOPMENT, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("주택", "빌라", "토지").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("재개발") || addr.contains("구역"))
+                            .orElse(false), 3),
+                    // buildingRegisterInfo 및 buildYear는 AuctionObject에 없는 필드이므로 수정
+                    // buildingStructure 필드로 대체하여 오래된 건물 여부 판단
+                    new TagRule("건물상태", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getBuildingStructure)
+                            .map(structure -> structure.contains("노후") || structure.contains("오래된"))
+                            .orElse(false), 2)
+            )),
+            Map.entry(RECONSTRUCTION, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("아파트").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("재건축") || addr.contains("단지"))
+                            .orElse(false), 3),
+                    // buildingRegisterInfo 및 buildYear는 AuctionObject에 없는 필드이므로 수정
+                    // buildingStructure 필드로 대체하여 오래된 건물 여부 판단
+                    new TagRule("건물상태", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getBuildingStructure)
+                            .map(structure -> structure.contains("노후") || structure.contains("오래된"))
+                            .orElse(false), 2)
+            )),
+            Map.entry(SUBSCRIPTION_RIGHTS, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("분양권").contains(type))
+                            .orElse(false), 3)
+                    // TODO: 분양권 관련 상세 정보 추가 시 규칙 보완
+            )),
+            Map.entry(COMMERCIAL_REAL_ESTATE, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("상가", "오피스", "공장", "창고", "상가건물", "근린생활시설").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("상권") || addr.contains("오피스지구"))
+                            .orElse(false), 2)
+            )),
+            Map.entry(SHARED_OFFICE, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("오피스", "상가", "근린생활시설").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("역세권") || addr.contains("IT벨리"))
+                            .orElse(false), 2),
+                    // Floor 필드가 없으므로 buildingStructure로 대체
+                    new TagRule("건물구조", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getBuildingStructure)
+                            .map(structure -> structure.contains("지상") || structure.contains("전체"))
+                            .orElse(false), 1)
+            )),
+            Map.entry(FIRST_TIME_BUYER, List.of(
+                    new TagRule("appraisedValue", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(v -> v.compareTo(new BigDecimal("100000000")) >= 0 && v.compareTo(new BigDecimal("500000000")) <= 0)
+                            .orElse(false), 3),
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("아파트", "오피스텔", "빌라").contains(type))
+                            .orElse(false), 2)
+            )),
+            Map.entry(ECO_FRIENDLY, List.of(
+                    new TagRule("설명", auction -> Optional.ofNullable(auction.getDisposalGoodsExecutionInfo())
+                            .map(DisposalGoodsExecutionInfo::getRemarks)
+                            .map(info -> info != null && (info.contains("태양광") || info.contains("에너지") || info.contains("친환경")))
+                            .orElse(false), 3)
+                    // TODO: 에너지 효율 등급 정보 추가 시 규칙 보완
+            )),
+            Map.entry(SMALL_REAL_ESTATE, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("오피스텔", "도시형 생활주택", "원룸").contains(type))
+                            .orElse(false), 3),
+                    // totalArea 필드가 없으므로 appraisedValue로 대체하여 소규모 부동산 판단
+                    new TagRule("감정가치", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAppraisedValue)
+                            .map(value -> value.compareTo(new BigDecimal("200000000")) <= 0)
+                            .orElse(false), 2)
+            )),
+            Map.entry(HOTEL_ACCOMMODATION, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("숙박시설", "모텔", "호텔", "리조트").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("관광지") || addr.contains("해변"))
+                            .orElse(false), 2)
+            )),
+            Map.entry(SHARED_HOUSING, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("주택", "다세대", "원룸").contains(type))
+                            .orElse(false), 3),
+                    // numberOfRooms 필드가 없으므로 buildingStructure로 대체
+                    new TagRule("건물구조", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getBuildingStructure)
+                            .map(structure -> structure.contains("다실") || structure.contains("복층"))
+                            .orElse(false), 2)
+            )),
+            Map.entry(THEMED_REAL_ESTATE, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("단독주택", "토지", "숙박시설").contains(type))
+                            .orElse(false), 2),
+                    new TagRule("설명", auction -> Optional.ofNullable(auction.getDisposalGoodsExecutionInfo())
+                            .map(DisposalGoodsExecutionInfo::getRemarks)
+                            .map(info -> info != null && (info.contains("실버타운") || info.contains("한옥") || info.contains("펜션") || info.contains("캠핑장")))
+                            .orElse(false), 3)
+            )),
+            Map.entry(UNIQUE_REAL_ESTATE, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("토지", "임야", "레저시설").contains(type))
+                            .orElse(false), 2),
+                    new TagRule("설명", auction -> Optional.ofNullable(auction.getDisposalGoodsExecutionInfo())
+                            .map(DisposalGoodsExecutionInfo::getRemarks)
+                            .map(info -> info != null && (info.contains("와이너리") || info.contains("목장") || info.contains("골프장")))
+                            .orElse(false), 3)
+            )),
+            Map.entry(FACTORY_INDUSTRIAL_COMPLEX, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("공장", "창고", "산업용지").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("산업단지") || addr.contains("공업지역"))
+                            .orElse(false), 3)
+            )),
+            Map.entry(LOGISTICS_CENTER, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("창고", "물류센터").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("고속도로") || addr.contains("IC"))
+                            .orElse(false), 3)
+            )),
+            Map.entry(COMMERCIAL_DISTRICT_DEVELOPMENT, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("상가", "토지", "상가건물").contains(type))
+                            .orElse(false), 2),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("상권 활성화") || addr.contains("신규 상업지구"))
+                            .orElse(false), 3)
+            )),
+            Map.entry(SPECIAL_COMMERCIAL_REAL_ESTATE, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("상가", "근린생활시설").contains(type))
+                            .orElse(false), 2),
+                    new TagRule("설명", auction -> Optional.ofNullable(auction.getDisposalGoodsExecutionInfo())
+                            .map(DisposalGoodsExecutionInfo::getRemarks)
+                            .map(info -> info != null && (info.contains("병원") || info.contains("학원") || info.contains("프랜차이즈")))
+                            .orElse(false), 3)
+            )),
+            Map.entry(LAND_INVESTMENT, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("토지", "임야", "농지").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("개발예정") || addr.contains("토지거래허가구역"))
+                            .orElse(false), 3)
+            )),
+            Map.entry(FARMLAND_INVESTMENT, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("농지", "전", "답", "과수원").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("귀농") || addr.contains("스마트팜") || addr.contains("태양광"))
+                            .orElse(false), 2)
+            )),
+            Map.entry(FOREST_INVESTMENT, List.of(
+                    new TagRule("propertyType", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getPropertyType)
+                            .map(type -> List.of("임야", "산", "숲").contains(type))
+                            .orElse(false), 3),
+                    new TagRule("address", auction -> Optional.ofNullable(auction.getAuctionObjectList())
+                            .filter(list -> !list.isEmpty())
+                            .map(List::getFirst)
+                            .map(AuctionObject::getAddress)
+                            .map(addr -> addr.contains("친환경") || addr.contains("개발") || addr.contains("산림"))
+                            .orElse(false), 2)
+            ))
+    );
+
+    // tagRules를 활용한 예시 메서드 (실제 사용처에 맞게 구현 필요)
+    public static List<InvestmentTag> getTagsForAuction(Auction auction) {
+        List<InvestmentTag> result = new ArrayList<>();
+        for (Map.Entry<InvestmentTag, List<TagRule>> entry : tagRules.entrySet()) {
+            int score = entry.getValue().stream().mapToInt(rule -> rule.test(auction) ? rule.getWeight() : 0).sum();
+            if (score > 0) {
+                result.add(entry.getKey());
+            }
         }
-
-        return (int) auction.getAuctionScheduleList().stream()
-                .filter(schedule -> "002".equals(schedule.getAuctionResultCode())) // 유찰 코드 필터링
-                .count();
-    }
-
-    // 물건 종류에 따른 추천 태그 반환
-    public static List<InvestmentTag> getRecommendedTagsByPropertyType(String propertyType) {
-        if (propertyType == null) {
-            return Collections.emptyList();
-        }
-
-        return switch (propertyType) {
-            case "아파트" -> Arrays.asList(SELF_OCCUPANCY, LONG_TERM_INVESTMENT, GAP_INVESTMENT, PREMIUM_RESIDENTIAL,
-                    RECONSTRUCTION);
-            case "오피스텔" -> Arrays.asList(SMALL_REAL_ESTATE, RENTAL_BUSINESS, SHORT_TERM_INVESTMENT, INCOME_GENERATING,
-                    GAP_INVESTMENT);
-            case "상가", "상가건물" ->
-                    Arrays.asList(INCOME_GENERATING, COMMERCIAL_REAL_ESTATE, SPECIAL_COMMERCIAL_REAL_ESTATE,
-                            COMMERCIAL_DISTRICT_DEVELOPMENT);
-            case "토지", "대지" ->
-                    Arrays.asList(LAND_INVESTMENT, REDEVELOPMENT, ECO_FRIENDLY, COMMERCIAL_DISTRICT_DEVELOPMENT);
-            case "단독주택", "주택" ->
-                    Arrays.asList(SELF_OCCUPANCY, REDEVELOPMENT, RECONSTRUCTION, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
-            case "다가구주택", "다세대주택" -> Arrays.asList(RENTAL_BUSINESS, INCOME_GENERATING, GAP_INVESTMENT, SHARED_HOUSING);
-            case "빌라" -> Arrays.asList(SELF_OCCUPANCY, RENTAL_BUSINESS, GAP_INVESTMENT, SMALL_REAL_ESTATE);
-            case "연립주택" -> Arrays.asList(SELF_OCCUPANCY, RENTAL_BUSINESS, RECONSTRUCTION, SMALL_REAL_ESTATE);
-            case "상가주택" -> Arrays.asList(INCOME_GENERATING, SELF_OCCUPANCY, SPECIAL_COMMERCIAL_REAL_ESTATE);
-            case "근린생활시설" -> Arrays.asList(COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, SPECIAL_COMMERCIAL_REAL_ESTATE);
-            case "사무실", "오피스" -> Arrays.asList(COMMERCIAL_REAL_ESTATE, SHARED_OFFICE, INCOME_GENERATING);
-            case "공장", "공장용지" -> Arrays.asList(FACTORY_INDUSTRIAL_COMPLEX, INCOME_GENERATING, HIGH_RISK);
-            case "창고", "물류창고" -> Arrays.asList(LOGISTICS_CENTER, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
-            case "농지", "농지용지", "전", "답" -> Arrays.asList(FARMLAND_INVESTMENT, ECO_FRIENDLY, LAND_INVESTMENT);
-            case "임야", "산" -> Arrays.asList(FOREST_INVESTMENT, ECO_FRIENDLY, UNIQUE_REAL_ESTATE);
-            case "펜션", "리조트" ->
-                    Arrays.asList(THEMED_REAL_ESTATE, HOTEL_ACCOMMODATION, INCOME_GENERATING, UNIQUE_REAL_ESTATE);
-            case "숙박시설", "모텔", "호텔" -> Arrays.asList(HOTEL_ACCOMMODATION, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
-            case "실버타운", "요양시설" -> Arrays.asList(THEMED_REAL_ESTATE, INCOME_GENERATING, PENSION_TYPE);
-            case "한옥" -> Arrays.asList(UNIQUE_REAL_ESTATE, THEMED_REAL_ESTATE, PREMIUM_RESIDENTIAL, ECO_FRIENDLY);
-            case "캠핑장" -> Arrays.asList(UNIQUE_REAL_ESTATE, THEMED_REAL_ESTATE, INCOME_GENERATING);
-            case "골프장", "레저시설" -> Arrays.asList(UNIQUE_REAL_ESTATE, HIGH_RISK, INCOME_GENERATING);
-            case "병원", "의료시설" ->
-                    Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
-            case "학원", "교육시설" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
-            case "카페", "음식점" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, SMALL_REAL_ESTATE);
-            case "프랜차이즈" -> Arrays.asList(SPECIAL_COMMERCIAL_REAL_ESTATE, INCOME_GENERATING, COMMERCIAL_REAL_ESTATE);
-            case "도시형생활주택" -> Arrays.asList(SMALL_REAL_ESTATE, RENTAL_BUSINESS, GAP_INVESTMENT, SHARED_HOUSING);
-            case "공공임대주택", "장기전세주택" -> Arrays.asList(GOVERNMENT_SUPPORTED, LOW_RISK, SELF_OCCUPANCY);
-            case "분양권" -> Arrays.asList(SUBSCRIPTION_RIGHTS, SHORT_TERM_INVESTMENT, FIRST_TIME_BUYER);
-            case "재개발", "재개발지역" -> Arrays.asList(REDEVELOPMENT, HIGH_RISK, SHORT_TERM_INVESTMENT);
-            case "재건축", "재건축지역" -> Arrays.asList(RECONSTRUCTION, HIGH_RISK, SHORT_TERM_INVESTMENT);
-            case "태양광발전소", "태양광부지" -> Arrays.asList(ECO_FRIENDLY, INCOME_GENERATING, FARMLAND_INVESTMENT);
-            case "상업지구", "상업지역" ->
-                    Arrays.asList(COMMERCIAL_DISTRICT_DEVELOPMENT, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
-            case "주상복합" -> Arrays.asList(SELF_OCCUPANCY, COMMERCIAL_REAL_ESTATE, PREMIUM_RESIDENTIAL);
-            case "지식산업센터", "아파트형공장" ->
-                    Arrays.asList(FACTORY_INDUSTRIAL_COMPLEX, COMMERCIAL_REAL_ESTATE, INCOME_GENERATING);
-            default ->
-                // 기본 추천 태그 (모든 부동산 유형에 적용 가능한 일반적인 태그)
-                    Arrays.asList(INCOME_GENERATING, LONG_TERM_INVESTMENT, SHORT_TERM_INVESTMENT, LOW_RISK, HIGH_RISK);
-        };
+        return result;
     }
 
     public static InvestmentTag fromName(String name) {
@@ -240,5 +568,10 @@ public enum InvestmentTag {
             }
         }
         throw new IllegalArgumentException("Unknown investment tag: " + name);
+    }
+
+    // Auction 객체로부터 적합한 InvestmentTag 리스트를 반환하는 메서드
+    public static List<InvestmentTag> from(Auction auction) {
+        return getTagsForAuction(auction);
     }
 }
