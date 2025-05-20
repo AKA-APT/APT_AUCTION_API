@@ -551,14 +551,20 @@ public enum InvestmentTag {
 
     // tagRules를 활용한 예시 메서드 (실제 사용처에 맞게 구현 필요)
     public static List<InvestmentTag> getTagsForAuction(Auction auction) {
-        List<InvestmentTag> result = new ArrayList<>();
+        // 각 태그별로 가중치 합산 결과를 저장
+        List<Map.Entry<InvestmentTag, Integer>> scoredTags = new ArrayList<>();
         for (Map.Entry<InvestmentTag, List<TagRule>> entry : tagRules.entrySet()) {
             int score = entry.getValue().stream().mapToInt(rule -> rule.test(auction) ? rule.getWeight() : 0).sum();
             if (score > 0) {
-                result.add(entry.getKey());
+                scoredTags.add(Map.entry(entry.getKey(), score));
             }
         }
-        return result;
+        // 가중치 내림차순 정렬 후 상위 5개만 추출
+        return scoredTags.stream()
+                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+                .limit(5)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     public static InvestmentTag fromName(String name) {
