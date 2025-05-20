@@ -63,9 +63,9 @@ public class AuctionCustomRepository {
         );
 
         Criteria criteria = new Criteria().andOperator(
-                locationCriteria,
-                ongoing,
-                notCanceled
+                locationCriteria
+                // ongoing,
+                // notCanceled
         );
 
         if (filter.minBidPrice() != null) {

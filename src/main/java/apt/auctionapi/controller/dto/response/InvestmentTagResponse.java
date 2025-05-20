@@ -10,4 +10,5 @@ public record InvestmentTagResponse(
     @Schema(description = "설명", example = "수익을 얻을 수 있는 투자 유형")
     String description
 ) {
+
 }
