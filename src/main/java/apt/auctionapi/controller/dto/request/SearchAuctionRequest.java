@@ -24,7 +24,7 @@ public record SearchAuctionRequest(
     @Schema(description = "유찰횟수 필터 (0: 전부, 1-5: 해당 횟수, 6: 5회 이상)", example = "2")
     Integer failedBidCount,
 
-    @Schema(description = "진행", example = "50000000")
+    @Schema(description = "진행", example = "true")
     Boolean isInProgress,
 
     @Schema(
