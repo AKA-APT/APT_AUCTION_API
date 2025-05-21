@@ -1,6 +1,7 @@
 package apt.auctionapi.service;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,17 +35,18 @@ public class SearchService {
         SearchAuctionRequest filter,
         Member member
     ) {
+        // 1) 필터링된 Auction 조회
         List<Auction> auctions = auctionCustomRepository.findByLocationRange(filter);
         auctions.forEach(Auction::mappingCodeValues);
 
         if (filter.failedBidCount() != null && filter.failedBidCount() > 0) {
             auctions = filterByRuptureCount(auctions, filter.failedBidCount());
         }
-
         if (filter.investmentTags() != null && !filter.investmentTags().isEmpty()) {
             auctions = filterByInvestmentTags(auctions, filter.investmentTags());
         }
 
+        // 2) 관심 및 입찰 목록 조회
         List<Interest> interests = member == null
             ? Collections.emptyList()
             : interestRepository.findAllByMemberId(member.getId());
@@ -52,7 +54,40 @@ public class SearchService {
             ? Collections.emptyList()
             : tenderRepository.findAllByMemberId(member.getId());
 
-        return getAuctionSummaryGroupedResponses(auctions, member, interests, tenders);
+        // 3) Inner DTO 생성
+        List<AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse> innerList =
+            auctions.stream()
+                .filter(this::hasValidLocation)
+                .map(auction -> AuctionSummaryGroupedResponse
+                    .InnerAuctionSummaryResponse.of(
+                        auction,
+                        isInterestedAuctionByAuction(member, auction, interests),
+                        isTenderedAuctionByAuction(member, auction, tenders),
+                        getInvestmentTags(auction)
+                    )
+                )
+                .toList();
+
+        // 4) 동일 좌표 첫 건만 남기기
+        var uniqueByCoord = new LinkedHashMap<String, AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse>();
+        innerList.forEach(inner -> {
+            String key = inner.auctionObject().latitude() + "," + inner.auctionObject().longitude();
+            uniqueByCoord.putIfAbsent(key, inner);
+        });
+
+        // 5) DTO 리스트 변환
+        return uniqueByCoord.values().stream()
+            .map(inner -> {
+                double lat = inner.auctionObject().latitude();
+                double lng = inner.auctionObject().longitude();
+                return AuctionSummaryGroupedResponse.builder()
+                    .latitude(lat)
+                    .longitude(lng)
+                    .totalCount(1)                      // 중복 제거했으니 항상 1
+                    .auctions(List.of(inner))
+                    .build();
+            })
+            .toList();
     }
 
     private List<Auction> filterByRuptureCount(List<Auction> auctions, int failedBidCount) {
