@@ -102,8 +102,10 @@ public class AuctionCustomRepository {
             .and("csBaseInfo").as("caseBaseInfo")
             .and("location").as("location")
             .and("dspslGdsDxdyInfo").as("dspslGdsDxdyInfo")
-            .and("isAuctionCancelled").as("isAuctionCancelled");
+            .and("isAuctionCancelled").as("isAuctionCancelled")
+            .and("gdsDspslObjctLst").as("auctionObjectList")
+            .and("aeeWevlMnpntLst").as("evaluationList");
 
-        return Aggregation.newAggregation(match);
+        return Aggregation.newAggregation(project, match);
     }
 }
