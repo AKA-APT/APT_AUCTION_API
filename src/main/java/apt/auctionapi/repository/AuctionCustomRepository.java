@@ -104,6 +104,6 @@ public class AuctionCustomRepository {
             .and("dspslGdsDxdyInfo").as("dspslGdsDxdyInfo")
             .and("isAuctionCancelled").as("isAuctionCancelled");
 
-        return Aggregation.newAggregation(match, project);
+        return Aggregation.newAggregation(match);
     }
 }
