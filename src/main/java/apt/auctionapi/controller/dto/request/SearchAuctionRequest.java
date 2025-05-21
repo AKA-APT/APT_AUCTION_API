@@ -2,9 +2,7 @@ package apt.auctionapi.controller.dto.request;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
-import apt.auctionapi.domain.InvestmentTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record SearchAuctionRequest(
@@ -26,6 +24,9 @@ public record SearchAuctionRequest(
     @Schema(description = "유찰횟수 필터 (0: 전부, 1-5: 해당 횟수, 6: 5회 이상)", example = "2")
     Integer failedBidCount,
 
+    @Schema(description = "진행", example = "50000000")
+    Boolean isInProgress,
+
     @Schema(
         description = "투자 유형 태그 필터 (쉼표로 구분)",
         allowableValues = {"수익형", "장기투자", "연금형", "저위험", "고급주거", "자가우선", "임대사업",
@@ -45,28 +46,8 @@ public record SearchAuctionRequest(
         if (investmentTags == null) {
             investmentTags = Collections.emptyList();
         }
-    }
-
-    // 투자 유형 태그 이름 목록을 반환
-    public List<String> getInvestmentTagNames() {
-        return investmentTags;
-    }
-
-    // 투자 유형 태그 Enum 목록을 반환
-    public List<InvestmentTag> getInvestmentTagList() {
-        if (investmentTags == null || investmentTags.isEmpty()) {
-            return Collections.emptyList();
+        if (isInProgress == null) {
+            isInProgress = true;
         }
-
-        return investmentTags.stream()
-            .map(tagName -> {
-                try {
-                    return InvestmentTag.fromName(tagName);
-                } catch (IllegalArgumentException e) {
-                    return null;
-                }
-            })
-            .filter(Objects::nonNull)
-            .toList();
     }
 }

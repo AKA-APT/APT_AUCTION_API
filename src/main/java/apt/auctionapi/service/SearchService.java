@@ -74,6 +74,14 @@ public class SearchService {
 
         // 5) DTO 리스트 변환
         return uniqueByCoord.values().stream()
+            .filter(inner -> {
+                boolean isInProgress = !inner.auctionStatus().status().equals("낙찰");
+                if (filter.isInProgress()) {
+                    return isInProgress;
+                } else {
+                    return !isInProgress;
+                }
+            })
             .map(inner -> {
                 double lat = inner.auctionObject().latitude();
                 double lng = inner.auctionObject().longitude();
