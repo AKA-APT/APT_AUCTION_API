@@ -3,15 +3,12 @@ package apt.auctionapi.service;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
-import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse;
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
@@ -113,55 +110,8 @@ public class SearchService {
         return InvestmentTag.from(auction);
     }
 
-    private List<AuctionSummaryGroupedResponse> getAuctionSummaryGroupedResponses(
-        List<Auction> auctions,
-        Member member,
-        List<Interest> interests,
-        List<Tender> tenders
-    ) {
-        Map<String, List<InnerAuctionSummaryResponse>> groupedAuctions = groupAuctionsByLocation(
-            auctions, member, interests, tenders);
-        return convertToGroupedResponses(groupedAuctions);
-    }
-
-    private Map<String, List<InnerAuctionSummaryResponse>> groupAuctionsByLocation(
-        List<Auction> auctions,
-        Member member,
-        List<Interest> interests,
-        List<Tender> tenders
-    ) {
-        return auctions.stream()
-            .filter(this::hasValidLocation)
-            .collect(Collectors.groupingBy(
-                this::createLocationKey,
-                Collectors.mapping(
-                    auction -> createInnerAuctionResponse(auction, member, interests, tenders),
-                    Collectors.toList()
-                )
-            ));
-    }
-
     private boolean hasValidLocation(Auction auction) {
         return auction.getLocation() != null;
-    }
-
-    private String createLocationKey(Auction auction) {
-        return auction.getLocation().getY() + "," + auction.getLocation().getX();
-    }
-
-    private InnerAuctionSummaryResponse createInnerAuctionResponse(
-        Auction auction,
-        Member member,
-        List<Interest> interests,
-        List<Tender> tenders
-    ) {
-        List<InvestmentTag> investmentTags = getInvestmentTags(auction);
-        return InnerAuctionSummaryResponse.of(
-            auction,
-            isInterestedAuctionByAuction(member, auction, interests),
-            isTenderedAuctionByAuction(member, auction, tenders),
-            investmentTags
-        );
     }
 
     private boolean isInterestedAuctionByAuction(Member member, Auction auction, List<Interest> interests) {
@@ -180,28 +130,5 @@ public class SearchService {
         return tenders.stream()
             .map(Tender::getAuctionId)
             .anyMatch(id -> id.equals(auction.getId()));
-    }
-
-    private List<AuctionSummaryGroupedResponse> convertToGroupedResponses(
-        Map<String, List<InnerAuctionSummaryResponse>> groupedAuctions
-    ) {
-        return groupedAuctions.entrySet().stream()
-            .map(this::createGroupedResponse)
-            .toList();
-    }
-
-    private AuctionSummaryGroupedResponse createGroupedResponse(
-        Map.Entry<String, List<InnerAuctionSummaryResponse>> entry
-    ) {
-        String[] coordinates = entry.getKey().split(",");
-        double latitude = Double.parseDouble(coordinates[0]);
-        double longitude = Double.parseDouble(coordinates[1]);
-
-        return AuctionSummaryGroupedResponse.builder()
-            .latitude(latitude)
-            .longitude(longitude)
-            .totalCount(entry.getValue().size())
-            .auctions(entry.getValue())
-            .build();
     }
 }
