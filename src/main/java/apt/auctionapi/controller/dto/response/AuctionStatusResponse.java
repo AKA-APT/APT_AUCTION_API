@@ -2,6 +2,7 @@ package apt.auctionapi.controller.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 import apt.auctionapi.entity.auction.Auction;
@@ -57,7 +58,7 @@ public record AuctionStatusResponse(
 
         // 해당 날짜의 경매 일정 찾기 (한 번만 스트림 순회)
         Optional<AuctionSchedule> targetSchedule = auction.getAuctionScheduleList().stream()
-            .filter(schedule -> schedule.getAuctionDate().equals(targetDate))
+            .filter(schedule -> Objects.equals(schedule.getAuctionDate(), targetDate))
             .findFirst();
 
         // 결과 코드와 최종 가격 가져오기
