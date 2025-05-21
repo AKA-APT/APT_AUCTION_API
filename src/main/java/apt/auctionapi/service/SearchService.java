@@ -75,7 +75,7 @@ public class SearchService {
         // 5) DTO 리스트 변환
         return uniqueByCoord.values().stream()
             .filter(inner -> {
-                boolean isInProgress = !inner.auctionStatus().status().equals("낙찰");
+                boolean isInProgress = !inner.auctionStatus().status().equals("매각");
                 if (filter.isInProgress()) {
                     return isInProgress;
                 } else {
