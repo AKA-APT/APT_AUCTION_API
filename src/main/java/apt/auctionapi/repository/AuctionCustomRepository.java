@@ -99,7 +99,7 @@ public class AuctionCustomRepository {
         ProjectionOperation project = Aggregation.project()
             .and("gdsDspslDxdyLst").as("gdsDspslDxdyLst")
             .and("id").as("id")
-            .and("csBaseInfo").as("caseBaseInfo")
+            .and("csBaseInfo").as("csBaseInfo")
             .and("location").as("location")
             .and("dspslGdsDxdyInfo").as("dspslGdsDxdyInfo")
             .and("isAuctionCancelled").as("isAuctionCancelled")
