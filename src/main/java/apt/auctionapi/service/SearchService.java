@@ -27,6 +27,7 @@ public class SearchService {
     private final AuctionCustomRepository auctionCustomRepository;
     private final InterestRepository interestRepository;
     private final TenderRepository tenderRepository;
+    private final TagService tagService;
 
     public List<AuctionSummaryGroupedResponse> getAuctionsByLocationRange(
         SearchAuctionRequest filter,
@@ -50,19 +51,31 @@ public class SearchService {
         List<Tender> tenders = member == null
             ? Collections.emptyList()
             : tenderRepository.findAllByMemberId(member.getId());
+        List<InvestmentTag> userTags = member == null
+            ? List.of()
+            : tagService.getInvestmentTagsForMember(member);
 
+        // 3) Inner DTO 생성
         // 3) Inner DTO 생성
         List<AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse> innerList =
             auctions.stream()
                 .filter(this::hasValidLocation)
-                .map(auction -> AuctionSummaryGroupedResponse
-                    .InnerAuctionSummaryResponse.of(
-                        auction,
-                        isInterestedAuctionByAuction(member, auction, interests),
-                        isTenderedAuctionByAuction(member, auction, tenders),
-                        getInvestmentTags(auction)
-                    )
-                )
+                .map(auction -> {
+                    // 경매 전체 태그
+                    List<InvestmentTag> auctionTags = getInvestmentTags(auction);
+                    // 사용자 태그와 교집합 계산
+                    List<InvestmentTag> matchedTags = auctionTags.stream()
+                        .filter(userTags::contains)
+                        .toList();
+
+                    return AuctionSummaryGroupedResponse
+                        .InnerAuctionSummaryResponse.of(
+                            auction,
+                            isInterestedAuctionByAuction(member, auction, interests),
+                            isTenderedAuctionByAuction(member, auction, tenders),
+                            matchedTags    // 전체 태그 대신 교집합만 넘김
+                        );
+                })
                 .toList();
 
         // 4) 동일 좌표 첫 건만 남기기
