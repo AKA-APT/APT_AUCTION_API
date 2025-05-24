@@ -3,6 +3,10 @@ package apt.auctionapi.repository;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ReplaceRootOperation;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -22,18 +26,15 @@ public class AuctionCustomRepository {
 
     public List<Auction> findByLocationRange(SearchAuctionRequest filter) {
         Criteria criteria = buildCriteria(filter);
-        Query query = new Query(criteria);
-        query.fields()
-            .include("gdsDspslDxdyLst")
-            .include("id")
-            .include("csBaseInfo")
-            .include("location")
-            .include("dspslGdsDxdyInfo")
-            .include("isAuctionCancelled")
-            .include("gdsDspslObjctLst")
-            .include("aeeWevlMnpntLst")
-            .include("auctionStatus");
-        return mongoTemplate.findDistinct(query, "location", Auction.class, Auction.class);
+
+        MatchOperation match = Aggregation.match(criteria);
+        GroupOperation group = Aggregation.group("location").first(Aggregation.ROOT).as("auction");
+        ReplaceRootOperation root = Aggregation.replaceRoot("auction");
+
+        Aggregation agg = Aggregation.newAggregation(match, group, root);
+        return mongoTemplate
+            .aggregate(agg, "auctions", Auction.class)
+            .getMappedResults();
     }
 
     public List<GeoJsonPoint> findLightweightByLocationRange(SearchAuctionLocationsRequest filter) {
