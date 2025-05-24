@@ -2,6 +2,7 @@ package apt.auctionapi.service;
 
 import java.util.List;
 
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,13 @@ public class AuctionService {
     }
 
     public AuctionDetail getAuctionDetailById(String id) {
-        return auctionDetailRepository.findById(id)
+        ObjectId oid;
+        try {
+            oid = new ObjectId(id);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("유효한 auction_id(ObjectId) 형식이 아닙니다: " + id);
+        }
+        return auctionDetailRepository.findByAuctionId(oid)
             .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
     }
 
