@@ -4,11 +4,13 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
+import apt.auctionapi.controller.dto.response.SearchAuctionLocationsResponse;
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
@@ -119,5 +121,12 @@ public class SearchService {
         return tenders.stream()
             .map(Tender::getAuctionId)
             .anyMatch(id -> id.equals(auction.getId()));
+    }
+
+    public SearchAuctionLocationsResponse getLightAuctionsByLocationRange(
+        SearchAuctionRequest filter
+    ) {
+        List<GeoJsonPoint> locations = auctionCustomRepository.findLightweightByLocationRange(filter);
+        return SearchAuctionLocationsResponse.from(locations);
     }
 }

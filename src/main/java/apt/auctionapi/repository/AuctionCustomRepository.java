@@ -32,7 +32,16 @@ public class AuctionCustomRepository {
             .include("gdsDspslObjctLst")
             .include("aeeWevlMnpntLst")
             .include("auctionStatus");
-        return mongoTemplate.find(query, Auction.class, "auctions");
+        return mongoTemplate.findDistinct(query, "location", Auction.class, Auction.class);
+    }
+
+    public List<GeoJsonPoint> findLightweightByLocationRange(SearchAuctionRequest filter) {
+        Criteria criteria = buildCriteria(filter);
+        Query query = new Query(criteria);
+        query.fields()
+            .include("location")
+            .include("auctionStatus");
+        return mongoTemplate.findDistinct(query, "location", Auction.class, GeoJsonPoint.class);
     }
 
     private Criteria buildCriteria(SearchAuctionRequest filter) {

@@ -20,6 +20,7 @@ import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
 import apt.auctionapi.controller.dto.response.AuctionStatusResponse;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.InvestmentTagResponse;
+import apt.auctionapi.controller.dto.response.SearchAuctionLocationsResponse;
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Survey;
@@ -55,9 +56,15 @@ public class AuctionController {
         @ParameterObject @ModelAttribute SearchAuctionRequest filter,
         @AuthMember(required = false) Member member
     ) {
-        return ResponseEntity.ok(
-            searchService.getAuctionsByLocationRange(filter, member)
-        );
+        return ResponseEntity.ok(searchService.getAuctionsByLocationRange(filter, member));
+    }
+
+    @Operation(summary = "경매 위치 조회", description = "지정한 범위 내의 경매 위치를 조회합니다.")
+    @GetMapping
+    public ResponseEntity<SearchAuctionLocationsResponse> getAuctionsByLocation(
+        @ParameterObject @ModelAttribute SearchAuctionRequest filter
+    ) {
+        return ResponseEntity.ok(searchService.getLightAuctionsByLocationRange(filter));
     }
 
     @Operation(summary = "경매 상세 조회", description = "지정한 경매 ID에 해당하는 경매의 상세 정보를 조회합니다.")
@@ -133,8 +140,7 @@ public class AuctionController {
     @GetMapping(value = "/{id}/images/{index}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getPhoto(
         @PathVariable("id") String auctionId,
-        @PathVariable("index") int photoIndex)
-    {
+        @PathVariable("index") int photoIndex) {
         byte[] imageBytes = imageService.getPhotoBytes(auctionId, photoIndex);
         return ResponseEntity
             .ok()
