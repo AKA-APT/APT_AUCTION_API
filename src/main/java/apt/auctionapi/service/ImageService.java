@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import apt.auctionapi.entity.AuctionDocument;
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.repository.AuctionRepository;
-import apt.auctionapi.repository.AuctionRepositoryV2;
+import apt.auctionapi.repository.AuctionImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +36,7 @@ public class ImageService {
     private final RestTemplate restTemplate;
     private final AuctionRepository auctionRepository;
     private final ObjectMapper objectMapper;
-    private final AuctionRepositoryV2 auctionRepo;
+    private final AuctionImageRepository auctionRepo;
 
     public JsonNode getAuctionImages(String id) {
         // MongoDB에서 해당 ID를 조회

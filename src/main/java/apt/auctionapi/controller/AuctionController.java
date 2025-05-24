@@ -23,6 +23,7 @@ import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.InvestmentTagResponse;
 import apt.auctionapi.controller.dto.response.SearchAuctionLocationsResponse;
 import apt.auctionapi.domain.InvestmentTag;
+import apt.auctionapi.entity.AuctionDetail;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Survey;
 import apt.auctionapi.entity.auction.Auction;
@@ -72,6 +73,12 @@ public class AuctionController {
     @GetMapping("/{id}")
     public ResponseEntity<Auction> getAuctionById(@PathVariable String id) {
         return ResponseEntity.ok(auctionService.getAuctionById(id));
+    }
+
+    @Operation(summary = "경매 추가 상세 조회", description = "지정한 경매 ID에 해당하는 경매의 추가 상세 정보를 조회합니다.")
+    @GetMapping("/{id}/details")
+    public ResponseEntity<AuctionDetail> getAuctionDetailById(@PathVariable String id) {
+        return ResponseEntity.ok(auctionService.getAuctionDetailById(id));
     }
 
     @Operation(summary = "좋아요", description = "사용자가 경매를 좋아요합니다.")

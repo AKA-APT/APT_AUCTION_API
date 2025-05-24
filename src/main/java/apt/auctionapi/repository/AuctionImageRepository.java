@@ -7,6 +7,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import apt.auctionapi.entity.AuctionDocument;
 
-public interface AuctionRepositoryV2 extends MongoRepository<AuctionDocument, String> {
+public interface AuctionImageRepository extends MongoRepository<AuctionDocument, String> {
     Optional<AuctionDocument> findByAuctionId(ObjectId auctionId);
 }
