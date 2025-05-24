@@ -3,13 +3,10 @@ package apt.auctionapi.repository;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
@@ -23,41 +20,34 @@ public class AuctionCustomRepository {
     private final MongoTemplate mongoTemplate;
 
     public List<Auction> findByLocationRange(SearchAuctionRequest filter) {
-        // 1) MongoDB 로 박스(사각형) 조회
-        Criteria criteria = buildBoxCriteria(filter);
-        Aggregation aggregation = buildAggregation(criteria);
-        AggregationResults<Auction> results = mongoTemplate.aggregate(
-            aggregation, "auctions", Auction.class
-        );
-
-        // 2) (필요 없으면 제거) 추가 필터링 로직이 없다면 바로 반환
-        return results.getMappedResults();
+        Criteria criteria = buildCriteria(filter);
+        Query query = new Query(criteria);
+        query.fields()
+            .include("gdsDspslDxdyLst")
+            .include("id")
+            .include("csBaseInfo")
+            .include("location")
+            .include("dspslGdsDxdyInfo")
+            .include("isAuctionCancelled")
+            .include("gdsDspslObjctLst")
+            .include("aeeWevlMnpntLst")
+            .include("auctionStatus");
+        return mongoTemplate.find(query, Auction.class, "auctions");
     }
 
-    private Criteria buildBoxCriteria(SearchAuctionRequest filter) {
+    private Criteria buildCriteria(SearchAuctionRequest filter) {
         GeoJsonPoint ll = new GeoJsonPoint(filter.lbLng(), filter.lbLat());
         GeoJsonPoint ul = new GeoJsonPoint(filter.lbLng(), filter.rtLat());
         GeoJsonPoint ur = new GeoJsonPoint(filter.rtLng(), filter.rtLat());
         GeoJsonPoint lr = new GeoJsonPoint(filter.rtLng(), filter.lbLat());
-
         GeoJsonPolygon box = new GeoJsonPolygon(ll, ul, ur, lr, ll);
-
-        // GeoJSON 필드에 대해 $geoWithin + Polygon 사용
-        return Criteria.where("location")
-            .within(box);
-    }
-
-    private Aggregation buildAggregation(Criteria criteria) {
-        MatchOperation match = Aggregation.match(criteria);
-        ProjectionOperation project = Aggregation.project()
-            .and("gdsDspslDxdyLst").as("gdsDspslDxdyLst")
-            .and("id").as("id")
-            .and("csBaseInfo").as("csBaseInfo")
-            .and("location").as("location")
-            .and("dspslGdsDxdyInfo").as("dspslGdsDxdyInfo")
-            .and("isAuctionCancelled").as("isAuctionCancelled")
-            .and("gdsDspslObjctLst").as("gdsDspslObjctLst")
-            .and("aeeWevlMnpntLst").as("aeeWevlMnpntLst");
-        return Aggregation.newAggregation(match, project);
+        Criteria criteria = Criteria.where("location").within(box);
+        if (filter.isInProgress()) {
+            criteria = criteria.and("auctionStatus").is("진행");
+        } else {
+            criteria = criteria.and("auctionStatus").is("낙찰");
+        }
+        return criteria;
     }
 }
+
