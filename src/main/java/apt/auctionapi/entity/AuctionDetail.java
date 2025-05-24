@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 
 @Getter
@@ -18,19 +20,29 @@ public class AuctionDetail {
     private String id;
 
     @Field("auction_id")
+    @JsonIgnore
     private ObjectId auctionId;
 
     private int photoCount;
-    private List<RightHolderGroup> rightHolders;
-    private List<OccupantInfo> occupantInfoList;
-    private List<AuctionObject> objectList;
-    private List<PublishedPrice> publishedPriceList;
 
-    @Field("landInfo")
-    private LandInfoDetail landInfoDetail;
+    private List<RightHolderGroup> rightHolders;
 
     private List<OccupancyInfo> occupancyInfoList;
+
     private List<OccupancyRelationship> occupancyRelationshipList;
+
+    private List<OccupantInfo> occupantInfoList;
+
+    private List<AuctionObject> objectList;
+
+    @Field("landInfo.publishedPrice")
+    private List<PublishedPrice> publishedPriceList;
+
+    @Field("landInfo.landInfo")
+    private LandInfoDetail landInfoDetail;
+
+    @Field("buildingInfo.landInfo")
+    private BuildingInfo buildingInfo;
 
     @Getter
     public static class RightHolderGroup {
@@ -121,7 +133,6 @@ public class AuctionDetail {
         private double grossAreaSum;
         private int maxFloorArea;
         private int maxBuildingRatio;
-        private BuildingInfo buildingInfo;
     }
 
     @Getter
