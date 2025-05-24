@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import apt.auctionapi.controller.dto.request.SearchAuctionLocationsRequest;
 import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
 import apt.auctionapi.entity.auction.Auction;
+import apt.auctionapi.entity.auction.AuctionLocation;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -36,13 +37,13 @@ public class AuctionCustomRepository {
         return mongoTemplate.find(query, Auction.class);
     }
 
-    public List<GeoJsonPoint> findLightweightByLocationRange(SearchAuctionLocationsRequest filter) {
+    public List<AuctionLocation> findLightweightByLocationRange(SearchAuctionLocationsRequest filter) {
         Criteria criteria = buildCriteria(filter);
         Query query = new Query(criteria);
         query.fields()
             .include("location")
             .include("auctionStatus");
-        return mongoTemplate.find(query, GeoJsonPoint.class);
+        return mongoTemplate.find(query, AuctionLocation.class);
     }
 
     private Criteria buildCriteria(SearchAuctionRequest filter) {

@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
+import apt.auctionapi.entity.auction.AuctionLocation;
+
 public record SearchAuctionLocationsResponse(
     Integer totalCount,
     List<InnerLocation> locations
@@ -19,10 +21,10 @@ public record SearchAuctionLocationsResponse(
         }
     }
 
-    public static SearchAuctionLocationsResponse from(List<GeoJsonPoint> locations) {
+    public static SearchAuctionLocationsResponse from(List<AuctionLocation> locations) {
         List<InnerLocation> innerLocations = new ArrayList<>();
-        for (GeoJsonPoint location : locations) {
-            InnerLocation from = InnerLocation.from(location);
+        for (AuctionLocation location : locations) {
+            InnerLocation from = InnerLocation.from(location.getLocation());
             innerLocations.add(from);
         }
         return new SearchAuctionLocationsResponse(innerLocations.size(), innerLocations);

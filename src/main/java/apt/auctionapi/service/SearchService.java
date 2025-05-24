@@ -17,6 +17,7 @@ import apt.auctionapi.entity.Interest;
 import apt.auctionapi.entity.Member;
 import apt.auctionapi.entity.Tender;
 import apt.auctionapi.entity.auction.Auction;
+import apt.auctionapi.entity.auction.AuctionLocation;
 import apt.auctionapi.repository.AuctionCustomRepository;
 import apt.auctionapi.repository.InterestRepository;
 import apt.auctionapi.repository.TenderRepository;
@@ -127,7 +128,7 @@ public class SearchService {
     public SearchAuctionLocationsResponse getLightAuctionsByLocationRange(
         SearchAuctionLocationsRequest filter
     ) {
-        List<GeoJsonPoint> locations = auctionCustomRepository.findLightweightByLocationRange(filter);
+        List<AuctionLocation> locations = auctionCustomRepository.findLightweightByLocationRange(filter);
         return SearchAuctionLocationsResponse.from(locations);
     }
 }
