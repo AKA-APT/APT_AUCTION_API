@@ -1,5 +1,6 @@
 package apt.auctionapi.entity;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -14,9 +15,11 @@ public class AuctionDocument {
     private String id;
 
     @Field("auction_id")
-    private String auctionId;
+    private ObjectId auctionId;
 
     private String caseSite;
+
+    private String caseName;
 
     private String itemNumber;
 
