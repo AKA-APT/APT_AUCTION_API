@@ -1,10 +1,9 @@
 package apt.auctionapi.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,46 +53,38 @@ public class SearchService {
 
         // 3) Inner DTO 생성
         List<AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse> innerList =
-            auctions.stream()
-                .filter(this::hasValidLocation)
-                .map(auction -> {
-                    // 경매 전체 태그
-                    List<InvestmentTag> auctionTags = getInvestmentTags(auction);
-                    // 사용자 태그와 교집합 계산
-                    List<InvestmentTag> matchedTags = auctionTags.stream()
-                        .filter(userTags::contains)
-                        .toList();
+            new ArrayList<>();
+        for (Auction auction1 : auctions) {
+            if (hasValidLocation(auction1)) {
+                List<InvestmentTag> matchedTags = getInvestmentTags(auction1).stream()
+                    .filter(userTags::contains)
+                    .toList();
 
-                    return AuctionSummaryGroupedResponse
-                        .InnerAuctionSummaryResponse.of(
-                            auction,
-                            isInterestedAuctionByAuction(member, auction, interests),
-                            isTenderedAuctionByAuction(member, auction, tenders),
-                            matchedTags    // 전체 태그 대신 교집합만 넘김
-                        );
-                })
-                .toList();
+                AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse applied = AuctionSummaryGroupedResponse
+                    .InnerAuctionSummaryResponse.of(
+                        auction1,
+                        isInterestedAuctionByAuction(member, auction1, interests),
+                        isTenderedAuctionByAuction(member, auction1, tenders),
+                        matchedTags
+                    );
+                innerList.add(applied);
+            }
+        }
 
-        // 4) 동일 좌표 첫 건만 남기기
-        var uniqueByCoord = new LinkedHashMap<String, AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse>();
-        innerList.forEach(inner -> {
-            String key = inner.auctionObject().latitude() + "," + inner.auctionObject().longitude();
-            uniqueByCoord.putIfAbsent(key, inner);
-        });
-
-        // 5) DTO 리스트 변환
-        return uniqueByCoord.values().stream()
-            .map(inner -> {
-                double lat = inner.auctionObject().latitude();
-                double lng = inner.auctionObject().longitude();
-                return AuctionSummaryGroupedResponse.builder()
-                    .latitude(lat)
-                    .longitude(lng)
-                    .totalCount(1)                      // 중복 제거했으니 항상 1
-                    .auctions(List.of(inner))
-                    .build();
-            })
-            .toList();
+        // 4) DTO 리스트 변환 (중복 제거 없이 그대로 매핑)
+        List<AuctionSummaryGroupedResponse> list = new ArrayList<>();
+        for (AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse innerAuctionSummaryResponse : innerList) {
+            double lat = innerAuctionSummaryResponse.auctionObject().latitude();
+            double lng = innerAuctionSummaryResponse.auctionObject().longitude();
+            AuctionSummaryGroupedResponse apply = AuctionSummaryGroupedResponse.builder()
+                .latitude(lat)
+                .longitude(lng)
+                .totalCount(1)
+                .auctions(List.of(innerAuctionSummaryResponse))
+                .build();
+            list.add(apply);
+        }
+        return list;
     }
 
     private List<InvestmentTag> getInvestmentTags(Auction auction) {

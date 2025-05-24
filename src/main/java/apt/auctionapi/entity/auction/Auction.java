@@ -24,7 +24,7 @@ import lombok.Getter;
  * 사건 기본 정보, 경매 일정, 감정 평가, 주변 통계 등 경매와 관련된 모든 데이터를 포함합니다.
  */
 @Getter
-@Document(collection = "auctions")
+@Document(collection = "auctions_distinct")
 public class Auction {
 
     /**
@@ -76,13 +76,6 @@ public class Auction {
     @Field("isAuctionCancelled")
     private Boolean isAuctionCancelled;
 
-    /**
-     * 현재 입찰가를 반환
-     */
-    public BigDecimal getLatestBiddingPrice() {
-        return this.getDisposalGoodsExecutionInfo().getFirstAuctionPrice();
-    }
-
     public void mappingCodeValues() {
         // 코드값 매핑
         if (getAuctionScheduleList() != null) {
@@ -125,17 +118,5 @@ public class Auction {
                     .setAuctionGoodsUsage(AuctionCodeMapper.getAuctionGoodsUsageDescription(usageCode));
             }
         }
-    }
-
-    public boolean isRupturedMoreThan(int failedBidCount) {
-        if (this.getAuctionScheduleList() == null) {
-            return false;
-        }
-
-        long ruptureCount = getAuctionScheduleList().stream()
-            .filter(schedule -> "002".equals(schedule.getAuctionResultCode()))
-            .count();
-
-        return ruptureCount >= failedBidCount;
     }
 }

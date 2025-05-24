@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 
 @Getter
-@Document(collection = "auctions")
+@Document(collection = "auctions_distinct")
 public class AuctionLocation {
 
     @Field("location")

@@ -22,10 +22,11 @@ public record SearchAuctionLocationsResponse(
     }
 
     public static SearchAuctionLocationsResponse from(List<AuctionLocation> locations) {
-        List<InnerLocation> innerLocations = locations.stream()
-            .map(loc -> InnerLocation.from(loc.getLocation()))
-            .distinct()
-            .toList();
+        List<InnerLocation> innerLocations = new ArrayList<>();
+        for (AuctionLocation loc : locations) {
+            InnerLocation il = InnerLocation.from(loc.getLocation());
+            innerLocations.add(il);
+        }
         return new SearchAuctionLocationsResponse(innerLocations.size(), innerLocations);
     }
 }
