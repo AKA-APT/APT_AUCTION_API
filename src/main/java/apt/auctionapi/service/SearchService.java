@@ -56,7 +56,6 @@ public class SearchService {
             : tagService.getInvestmentTagsForMember(member);
 
         // 3) Inner DTO 생성
-        // 3) Inner DTO 생성
         List<AuctionSummaryGroupedResponse.InnerAuctionSummaryResponse> innerList =
             auctions.stream()
                 .filter(this::hasValidLocation)

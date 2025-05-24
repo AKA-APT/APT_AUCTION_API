@@ -35,22 +35,23 @@ public class AuctionCustomRepository {
         );
         List<Auction> candidates = results.getMappedResults();
 
-        // 2) 코드 레벨에서 사각형(bounds) 필터링
-        double lbLat = filter.lbLat();
-        double rtLat = filter.rtLat();
-        double lbLng = filter.lbLng();
-        double rtLng = filter.rtLng();
-
-        return candidates.stream()
-            .filter(a -> {
-                // GeoJSON Point: coordinates = [lng, lat]
-                List<Double> coords = a.getLocation().getCoordinates();
-                double lng = coords.get(0);
-                double lat = coords.get(1);
-                return lat >= lbLat && lat <= rtLat
-                    && lng >= lbLng && lng <= rtLng;
-            })
-            .collect(Collectors.toList());
+        // // 2) 코드 레벨에서 사각형(bounds) 필터링
+        // double lbLat = filter.lbLat();
+        // double rtLat = filter.rtLat();
+        // double lbLng = filter.lbLng();
+        // double rtLng = filter.rtLng();
+        //
+        // return candidates.stream()
+        //     .filter(a -> {
+        //         // GeoJSON Point: coordinates = [lng, lat]
+        //         List<Double> coords = a.getLocation().getCoordinates();
+        //         double lng = coords.get(0);
+        //         double lat = coords.get(1);
+        //         return lat >= lbLat && lat <= rtLat
+        //             && lng >= lbLng && lng <= rtLng;
+        //     })
+        //     .collect(Collectors.toList());
+        return candidates;
     }
 
     private Criteria buildCriteria(SearchAuctionRequest filter) {
