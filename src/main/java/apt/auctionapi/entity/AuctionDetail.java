@@ -39,7 +39,7 @@ public class AuctionDetail {
     private List<PublishedPrice> publishedPriceList;
 
     @Field("landInfo.landInfo")
-    private LandInfoDetail landInfoDetail;
+    private LandInfo landInfo;
 
     @Field("buildingInfo.landInfo")
     private BuildingInfo buildingInfo;
@@ -110,7 +110,7 @@ public class AuctionDetail {
     }
 
     @Getter
-    public static class LandInfoDetail {
+    public static class LandInfo {
         private String pnu;
         private String bjdCode;
         private BjdInfo bjdInfo;
