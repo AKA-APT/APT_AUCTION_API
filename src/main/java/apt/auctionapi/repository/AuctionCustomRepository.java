@@ -2,13 +2,13 @@ package apt.auctionapi.repository;
 
 import java.util.List;
 
-import org.springframework.data.geo.Point;
-import org.springframework.data.geo.Polygon;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
@@ -35,14 +35,12 @@ public class AuctionCustomRepository {
     }
 
     private Criteria buildBoxCriteria(SearchAuctionRequest filter) {
-        // 좌하단, 좌상단, 우상단, 우하단, 다시 좌하단 순서로 폴리곤 닫기
-        Point lowerLeft = new Point(filter.lbLng(), filter.lbLat());
-        Point upperLeft = new Point(filter.lbLng(), filter.rtLat());
-        Point upperRight = new Point(filter.rtLng(), filter.rtLat());
-        Point lowerRight = new Point(filter.rtLng(), filter.lbLat());
+        GeoJsonPoint ll = new GeoJsonPoint(filter.lbLng(), filter.lbLat());
+        GeoJsonPoint ul = new GeoJsonPoint(filter.lbLng(), filter.rtLat());
+        GeoJsonPoint ur = new GeoJsonPoint(filter.rtLng(), filter.rtLat());
+        GeoJsonPoint lr = new GeoJsonPoint(filter.rtLng(), filter.lbLat());
 
-        // 박스 폴리곤
-        Polygon box = new Polygon(lowerLeft, upperLeft, upperRight, lowerRight, lowerLeft);
+        GeoJsonPolygon box = new GeoJsonPolygon(ll, ul, ur, lr, ll);
 
         // GeoJSON 필드에 대해 $geoWithin + Polygon 사용
         return Criteria.where("location")
