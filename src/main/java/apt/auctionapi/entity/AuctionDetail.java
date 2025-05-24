@@ -1,7 +1,6 @@
 package apt.auctionapi.entity;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.bson.types.ObjectId;
@@ -198,8 +197,8 @@ public class AuctionDetail {
         private Double deposit;
         private Double leasePrice;
         private String leasePriceType;
-        private OffsetDateTime registrationDt;
-        private OffsetDateTime fixedDt;
+        private LocalDate registrationDt;
+        private LocalDate fixedDt;
         private Double simpleDeposit;
         private Double simpleLeasePrice;
     }
