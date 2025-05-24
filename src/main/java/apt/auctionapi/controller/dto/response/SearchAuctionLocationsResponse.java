@@ -13,8 +13,8 @@ public record SearchAuctionLocationsResponse(
 ) {
 
     private record InnerLocation(
-        double x,
-        double y
+        double longitude,
+        double latitude
     ) {
         public static InnerLocation from(GeoJsonPoint geoJsonPoint) {
             return new InnerLocation(geoJsonPoint.getX(), geoJsonPoint.getY());
@@ -22,11 +22,10 @@ public record SearchAuctionLocationsResponse(
     }
 
     public static SearchAuctionLocationsResponse from(List<AuctionLocation> locations) {
-        List<InnerLocation> innerLocations = new ArrayList<>();
-        for (AuctionLocation location : locations) {
-            InnerLocation from = InnerLocation.from(location.getLocation());
-            innerLocations.add(from);
-        }
+        List<InnerLocation> innerLocations = locations.stream()
+            .map(loc -> InnerLocation.from(loc.getLocation()))
+            .distinct()
+            .toList();
         return new SearchAuctionLocationsResponse(innerLocations.size(), innerLocations);
     }
 }
