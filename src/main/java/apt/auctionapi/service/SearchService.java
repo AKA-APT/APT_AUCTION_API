@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import apt.auctionapi.controller.dto.request.SearchAuctionLocationsRequest;
 import apt.auctionapi.controller.dto.request.SearchAuctionRequest;
 import apt.auctionapi.controller.dto.response.AuctionSummaryGroupedResponse;
 import apt.auctionapi.controller.dto.response.SearchAuctionLocationsResponse;
@@ -124,7 +125,7 @@ public class SearchService {
     }
 
     public SearchAuctionLocationsResponse getLightAuctionsByLocationRange(
-        SearchAuctionRequest filter
+        SearchAuctionLocationsRequest filter
     ) {
         List<GeoJsonPoint> locations = auctionCustomRepository.findLightweightByLocationRange(filter);
         return SearchAuctionLocationsResponse.from(locations);
