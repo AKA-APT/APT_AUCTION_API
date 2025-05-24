@@ -60,6 +60,6 @@ public class AuctionCustomRepository {
             .and("isAuctionCancelled").as("isAuctionCancelled")
             .and("gdsDspslObjctLst").as("gdsDspslObjctLst")
             .and("aeeWevlMnpntLst").as("aeeWevlMnpntLst");
-        return Aggregation.newAggregation(project, match);
+        return Aggregation.newAggregation(match, project);
     }
 }
