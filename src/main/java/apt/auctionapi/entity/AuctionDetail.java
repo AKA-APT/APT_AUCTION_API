@@ -35,7 +35,7 @@ public class AuctionDetail {
 
     private List<AuctionObject> objectList;
 
-    @Field("landInfo.publishedPrice")
+    @Field("landInfo.publishedPriceList")
     private List<PublishedPrice> publishedPriceList;
 
     @Field("landInfo.landInfo")
