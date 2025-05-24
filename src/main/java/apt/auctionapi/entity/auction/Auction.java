@@ -1,6 +1,5 @@
 package apt.auctionapi.entity.auction;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;

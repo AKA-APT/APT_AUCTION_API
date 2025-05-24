@@ -28,7 +28,7 @@ public class AuctionService {
     }
 
     public AuctionDetail getAuctionDetailById(String id) {
-        AuctionDetail auction = auctionDetailRepository.findById(id)
+        return auctionDetailRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
     }
 
