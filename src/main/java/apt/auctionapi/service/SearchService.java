@@ -37,13 +37,6 @@ public class SearchService {
         List<Auction> auctions = auctionCustomRepository.findByLocationRange(filter);
         auctions.forEach(Auction::mappingCodeValues);
 
-        if (filter.failedBidCount() != null && filter.failedBidCount() > 0) {
-            auctions = filterByRuptureCount(auctions, filter.failedBidCount());
-        }
-        if (filter.investmentTags() != null && !filter.investmentTags().isEmpty()) {
-            auctions = filterByInvestmentTags(auctions, filter.investmentTags());
-        }
-
         // 2) 관심 및 입찰 목록 조회
         List<Interest> interests = member == null
             ? Collections.emptyList()
@@ -103,22 +96,6 @@ public class SearchService {
                     .totalCount(1)                      // 중복 제거했으니 항상 1
                     .auctions(List.of(inner))
                     .build();
-            })
-            .toList();
-    }
-
-    private List<Auction> filterByRuptureCount(List<Auction> auctions, int failedBidCount) {
-        return auctions.stream()
-            .filter(auction -> auction.isRupturedMoreThan(failedBidCount))
-            .toList();
-    }
-
-    private List<Auction> filterByInvestmentTags(List<Auction> auctions, List<String> tagNames) {
-        return auctions.stream()
-            .filter(auction -> {
-                List<InvestmentTag> auctionTags = getInvestmentTags(auction);
-                return tagNames.stream().anyMatch(name ->
-                    auctionTags.stream().anyMatch(tag -> tag.getName().equals(name)));
             })
             .toList();
     }
