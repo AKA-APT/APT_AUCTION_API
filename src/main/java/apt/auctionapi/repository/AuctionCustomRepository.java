@@ -50,24 +50,16 @@ public class AuctionCustomRepository {
     }
 
     private Aggregation buildAggregation(Criteria criteria) {
-        // 1) 반드시 match 먼저
         MatchOperation match = Aggregation.match(criteria);
-
-        // 2) 그 다음에 project
         ProjectionOperation project = Aggregation.project()
             .and("gdsDspslDxdyLst").as("gdsDspslDxdyLst")
             .and("id").as("id")
             .and("csBaseInfo").as("csBaseInfo")
             .and("location").as("location")
-            .and("dspslGdsDxdyInfo").as("dspslDxdyInfo")
+            .and("dspslGdsDxdyInfo").as("dspslGdsDxdyInfo")
             .and("isAuctionCancelled").as("isAuctionCancelled")
             .and("gdsDspslObjctLst").as("gdsDspslObjctLst")
             .and("aeeWevlMnpntLst").as("aeeWevlMnpntLst");
-
-        // match → project 순으로 배열
-        return Aggregation.newAggregation(
-            match,
-            project
-        );
+        return Aggregation.newAggregation(project, match);
     }
 }
