@@ -20,6 +20,9 @@ spring:
       table-name: SPRING_SESSION
     timeout: 3600  # 세션 만료시간 (초)
 
+url:
+  auction: ${AUCTION_URL}
+
 kakao:
   api:
     key: ${KAKAO_REST_API_KEY}

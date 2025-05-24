@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -126,5 +127,18 @@ public class AuctionController {
     public ResponseEntity<Survey> getSurveyById(@PathVariable String id) {
         Survey survey = surveyService.getSurveyById(id);
         return ResponseEntity.ok(survey);
+    }
+
+    @Operation(summary = "경매 이미지 조회 V2", description = "지정한 경매 ID에 해당하는 경매의 이미지 리스트를 조회합니다.")
+    @GetMapping(value = "/{id}/images/{index}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getPhoto(
+        @PathVariable("id") String auctionId,
+        @PathVariable("index") int photoIndex)
+    {
+        byte[] imageBytes = imageService.getPhotoBytes(auctionId, photoIndex);
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.IMAGE_JPEG)
+            .body(imageBytes);
     }
 }

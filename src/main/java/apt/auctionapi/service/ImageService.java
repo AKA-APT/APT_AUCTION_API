@@ -1,9 +1,12 @@
 package apt.auctionapi.service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -16,17 +19,23 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import apt.auctionapi.entity.AuctionDocument;
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.repository.AuctionRepository;
+import apt.auctionapi.repository.AuctionRepositoryV2;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ImageService {
 
+    @Value("${url.auction}")
+    private String BASE_URL;
+
     private final RestTemplate restTemplate;
     private final AuctionRepository auctionRepository;
     private final ObjectMapper objectMapper;
+    private final AuctionRepositoryV2 auctionRepo;
 
     public JsonNode getAuctionImages(String id) {
         // MongoDB에서 해당 ID를 조회
@@ -92,5 +101,30 @@ public class ImageService {
         } catch (Exception e) {
             throw new RuntimeException("JSON 파싱 오류", e);
         }
+    }
+
+    public byte[] getPhotoBytes(String auctionId, int photoIndex) {
+        AuctionDocument doc = auctionRepo.findByAuctionId(auctionId)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "해당 auction_id를 찾을 수 없습니다: " + auctionId));
+
+        if (photoIndex < 1 || photoIndex > doc.getPhotoCount()) {
+            throw new IllegalArgumentException(
+                "photo_index는 1부터 " + doc.getPhotoCount() + " 사이여야 합니다.");
+        }
+
+        String encCaseSite = URLEncoder.encode(doc.getCaseSite(), StandardCharsets.UTF_8);
+        String encItemNum = URLEncoder.encode(doc.getItemNumber(), StandardCharsets.UTF_8);
+
+        String url = String.format(
+            "%s/%s/%s/사진/%d.jpg?w=512",
+            BASE_URL, encCaseSite, encItemNum, photoIndex
+        );
+
+        ResponseEntity<byte[]> resp = restTemplate.getForEntity(url, byte[].class);
+        if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
+            throw new IllegalStateException("이미지 다운로드 실패: " + url);
+        }
+        return resp.getBody();
     }
 }
