@@ -25,7 +25,6 @@ import apt.auctionapi.controller.dto.response.SearchAuctionLocationsResponse;
 import apt.auctionapi.domain.InvestmentTag;
 import apt.auctionapi.entity.AuctionDetail;
 import apt.auctionapi.entity.Member;
-import apt.auctionapi.entity.Survey;
 import apt.auctionapi.entity.auction.Auction;
 import apt.auctionapi.entity.auction.AuctionSummary;
 import apt.auctionapi.service.AuctionService;
@@ -33,7 +32,6 @@ import apt.auctionapi.service.ImageService;
 import apt.auctionapi.service.InterestService;
 import apt.auctionapi.service.SearchService;
 import apt.auctionapi.service.StatusService;
-import apt.auctionapi.service.SurveyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,7 +48,6 @@ public class AuctionController {
     private final SearchService searchService;
     private final ImageService imageService;
     private final StatusService statusService;
-    private final SurveyService surveyService;
 
     @Operation(summary = "경매 목록 조회", description = "지정한 범위 내의 경매 목록을 조회합니다.")
     @GetMapping
@@ -135,13 +132,6 @@ public class AuctionController {
     @GetMapping("/{id}/status")
     public ResponseEntity<AuctionStatusResponse> getAuctionStatus(@PathVariable String id) {
         return ResponseEntity.ok(statusService.getAuctionStatus(id));
-    }
-
-    @Operation(summary = "현황조사서 조회", description = "현재 로그인한 회원의 정보를 조회합니다.")
-    @GetMapping("/{id}/surveys")
-    public ResponseEntity<Survey> getSurveyById(@PathVariable String id) {
-        Survey survey = surveyService.getSurveyById(id);
-        return ResponseEntity.ok(survey);
     }
 
     @Operation(summary = "경매 이미지 조회 V2", description = "지정한 경매 ID에 해당하는 경매의 이미지 리스트를 조회합니다.")
