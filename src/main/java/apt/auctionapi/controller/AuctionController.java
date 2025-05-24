@@ -54,7 +54,7 @@ public class AuctionController {
     @Operation(summary = "경매 목록 조회", description = "지정한 범위 내의 경매 목록을 조회합니다.")
     @GetMapping
     public ResponseEntity<List<AuctionSummaryGroupedResponse>> getAuctionsByLocation(
-        @ParameterObject @ModelAttribute SearchAuctionLocationsRequest filter,
+        @ParameterObject @ModelAttribute SearchAuctionRequest filter,
         @AuthMember(required = false) Member member
     ) {
         return ResponseEntity.ok(searchService.getAuctionsByLocationRange(filter, member));
@@ -63,7 +63,7 @@ public class AuctionController {
     @Operation(summary = "경매 위치 조회", description = "지정한 범위 내의 경매 위치를 조회합니다.")
     @GetMapping("/locations")
     public ResponseEntity<SearchAuctionLocationsResponse> getAuctionsByLocation(
-        @ParameterObject @ModelAttribute SearchAuctionRequest filter
+        @ParameterObject @ModelAttribute SearchAuctionLocationsRequest filter
     ) {
         return ResponseEntity.ok(searchService.getLightAuctionsByLocationRange(filter));
     }
