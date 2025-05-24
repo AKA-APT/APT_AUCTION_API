@@ -2,8 +2,8 @@ package apt.auctionapi.repository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Point;
@@ -35,23 +35,24 @@ public class AuctionCustomRepository {
         );
         List<Auction> candidates = results.getMappedResults();
 
-        // // 2) 코드 레벨에서 사각형(bounds) 필터링
-        // double lbLat = filter.lbLat();
-        // double rtLat = filter.rtLat();
-        // double lbLng = filter.lbLng();
-        // double rtLng = filter.rtLng();
-        //
-        // return candidates.stream()
-        //     .filter(a -> {
-        //         // GeoJSON Point: coordinates = [lng, lat]
-        //         List<Double> coords = a.getLocation().getCoordinates();
-        //         double lng = coords.get(0);
-        //         double lat = coords.get(1);
-        //         return lat >= lbLat && lat <= rtLat
-        //             && lng >= lbLng && lng <= rtLng;
-        //     })
-        //     .collect(Collectors.toList());
-        return candidates;
+        // 2) 코드 레벨에서 사각형(bounds) 필터링 with for-loop
+        double lbLat = filter.lbLat();
+        double rtLat = filter.rtLat();
+        double lbLng = filter.lbLng();
+        double rtLng = filter.rtLng();
+
+        List<Auction> filtered = new ArrayList<>(candidates.size());
+        for (Auction a : candidates) {
+            // GeoJSON Point: coordinates = [lng, lat]
+            List<Double> coords = a.getLocation().getCoordinates();
+            double lng = coords.get(0);
+            double lat = coords.get(1);
+            if (lat >= lbLat && lat <= rtLat
+                && lng >= lbLng && lng <= rtLng) {
+                filtered.add(a);
+            }
+        }
+        return filtered;
     }
 
     private Criteria buildCriteria(SearchAuctionRequest filter) {
