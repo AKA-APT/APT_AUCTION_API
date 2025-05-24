@@ -41,7 +41,7 @@ public class AuctionDetail {
     @Field("landInfo.landInfo")
     private LandInfo landInfo;
 
-    @Field("buildingInfo.landInfo")
+    @Field("landInfo.buildingInfo")
     private BuildingInfo buildingInfo;
 
     @Getter
