@@ -1,6 +1,6 @@
 package apt.auctionapi.entity;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.bson.types.ObjectId;
@@ -68,15 +68,15 @@ public class AuctionDetail {
         private int occupantNumber;
         private String occupant;
         private String occupancyPart;
-        private OffsetDateTime registrationDate;
-        private OffsetDateTime fixedDate;
-        private OffsetDateTime dividendDemandDate;
+        private LocalDate registrationDate;
+        private LocalDate fixedDate;
+        private LocalDate dividendDemandDate;
         private Double deposit;
         private Double leasePrice;
         private String leasePriceType;
         private Double expectedDividends;
         private Integer isOpposingPower;
-        private OffsetDateTime dividendRequestTerminationDt;
+        private LocalDate dividendRequestTerminationDt;
         private Double simpleDeposit;
         private Double simpleLeasePrice;
         private Double simpleExpectedDividends;
