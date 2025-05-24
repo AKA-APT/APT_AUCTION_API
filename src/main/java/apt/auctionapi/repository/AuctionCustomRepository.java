@@ -42,7 +42,7 @@ public class AuctionCustomRepository {
         query.fields()
             .include("location")
             .include("auctionStatus");
-        return mongoTemplate.findDistinct(query, "location", Auction.class, GeoJsonPoint.class);
+        return mongoTemplate.find(query, GeoJsonPoint.class);
     }
 
     private Criteria buildCriteria(SearchAuctionRequest filter) {
