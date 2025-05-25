@@ -45,18 +45,18 @@ public class TenderService {
     public List<TenderResponse> getTender(Member member) {
         List<Tender> tenders = tenderRepository.findAllByMemberId(member.getId());
         List<TenderResponse> result = new ArrayList<>();
+
         for (Tender tender : tenders) {
-            Auction auction = auctionRepository.findById(tender.getAuctionId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 매물입니다 " + tender.getAuctionId()));
-            auction.mappingCodeValues();
-            result.add(
-                new TenderResponse(
-                    auction.getId(),
-                    auction,
-                    tender.getAmount(),
-                    AuctionStatusResponse.from(auction)
-                )
-            );
+            auctionRepository.findById(tender.getAuctionId())
+                .ifPresent(auction -> {
+                    auction.mappingCodeValues();
+                    result.add(new TenderResponse(
+                        auction.getId(),
+                        auction,
+                        tender.getAmount(),
+                        AuctionStatusResponse.from(auction)
+                    ));
+                });
         }
         return result;
     }
