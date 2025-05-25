@@ -63,6 +63,4 @@ public class InterestService {
             .auctionId(id)
             .build());
     }
-
-
 }

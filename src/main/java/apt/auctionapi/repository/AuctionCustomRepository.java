@@ -2,9 +2,12 @@ package apt.auctionapi.repository;
 
 import java.util.List;
 
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
-import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -22,7 +25,7 @@ public class AuctionCustomRepository {
     private final MongoTemplate mongoTemplate;
 
     public List<Auction> findByLocationRange(SearchAuctionRequest filter) {
-        Criteria criteria = buildCriteria(filter);
+        Criteria criteria = buildCircleCriteria(filter);
         Query query = new Query(criteria);
         query.fields()
             .include("gdsDspslDxdyLst")
@@ -37,7 +40,7 @@ public class AuctionCustomRepository {
     }
 
     public List<AuctionLocation> findLightweightByLocationRange(SearchAuctionLocationsRequest filter) {
-        Criteria criteria = buildCriteria(filter);
+        Criteria criteria = buildCircleCriteria(filter);
         Query query = new Query(criteria);
         query.fields()
             .include("location")
@@ -45,13 +48,33 @@ public class AuctionCustomRepository {
         return mongoTemplate.find(query, AuctionLocation.class);
     }
 
-    private Criteria buildCriteria(SearchAuctionRequest filter) {
-        GeoJsonPoint ll = new GeoJsonPoint(filter.lbLng(), filter.lbLat());
-        GeoJsonPoint ul = new GeoJsonPoint(filter.lbLng(), filter.rtLat());
-        GeoJsonPoint ur = new GeoJsonPoint(filter.rtLng(), filter.rtLat());
-        GeoJsonPoint lr = new GeoJsonPoint(filter.rtLng(), filter.lbLat());
-        GeoJsonPolygon box = new GeoJsonPolygon(ll, ul, ur, lr, ll);
-        Criteria criteria = Criteria.where("location").within(box);
+    private Criteria buildCircleCriteria(SearchAuctionRequest filter) {
+        // Bounding box corners
+        double minLng = filter.lbLng();
+        double maxLng = filter.rtLng();
+        double minLat = filter.lbLat();
+        double maxLat = filter.rtLat();
+
+        // Center point
+        double centerLng = (minLng + maxLng) / 2;
+        double centerLat = (minLat + maxLat) / 2;
+
+        // Convert degrees to kilometers
+        double kmPerLat = 111;
+        double kmPerLng = 111 * Math.cos(Math.toRadians(centerLat));
+
+        // Width and height in km
+        double widthKm = (maxLng - minLng) * kmPerLng;
+        double heightKm = (maxLat - minLat) * kmPerLat;
+
+        // Radius = half of diagonal
+        double radiusKm = Math.sqrt(widthKm * widthKm + heightKm * heightKm) / 2;
+
+        // Create circle (in kilometers)
+        Circle sphere = new Circle(new Point(centerLng, centerLat), new Distance(radiusKm, Metrics.KILOMETERS));
+
+        // Build criteria: withinSphere uses 2dsphere index
+        Criteria criteria = Criteria.where("location").withinSphere(sphere);
         if (filter.isInProgress()) {
             criteria = criteria.and("auctionStatus").is("진행");
         } else {
@@ -60,13 +83,23 @@ public class AuctionCustomRepository {
         return criteria;
     }
 
-    private Criteria buildCriteria(SearchAuctionLocationsRequest filter) {
-        GeoJsonPoint ll = new GeoJsonPoint(filter.lbLng(), filter.lbLat());
-        GeoJsonPoint ul = new GeoJsonPoint(filter.lbLng(), filter.rtLat());
-        GeoJsonPoint ur = new GeoJsonPoint(filter.rtLng(), filter.rtLat());
-        GeoJsonPoint lr = new GeoJsonPoint(filter.rtLng(), filter.lbLat());
-        GeoJsonPolygon box = new GeoJsonPolygon(ll, ul, ur, lr, ll);
-        Criteria criteria = Criteria.where("location").within(box);
+    private Criteria buildCircleCriteria(SearchAuctionLocationsRequest filter) {
+        // Same logic for lightweight location search
+        double minLng = filter.lbLng();
+        double maxLng = filter.rtLng();
+        double minLat = filter.lbLat();
+        double maxLat = filter.rtLat();
+
+        double centerLng = (minLng + maxLng) / 2;
+        double centerLat = (minLat + maxLat) / 2;
+        double kmPerLat = 111;
+        double kmPerLng = 111 * Math.cos(Math.toRadians(centerLat));
+        double widthKm = (maxLng - minLng) * kmPerLng;
+        double heightKm = (maxLat - minLat) * kmPerLat;
+        double radiusKm = Math.sqrt(widthKm * widthKm + heightKm * heightKm) / 2;
+        Circle sphere = new Circle(new Point(centerLng, centerLat), new Distance(radiusKm, Metrics.KILOMETERS));
+
+        Criteria criteria = Criteria.where("location").withinSphere(sphere);
         if (filter.isInProgress()) {
             criteria = criteria.and("auctionStatus").is("진행");
         } else {
