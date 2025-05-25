@@ -38,7 +38,9 @@ public class SearchService {
     ) {
         // 1) 필터링된 Auction 조회
         List<Auction> auctions = auctionCustomRepository.findByLocationRange(filter);
-        auctions.forEach(Auction::mappingCodeValues);
+        for (Auction auction : auctions) {
+            auction.mappingCodeValues();
+        }
 
         // 2) 관심 및 입찰 목록 조회
         List<Interest> interests = member == null
@@ -102,18 +104,26 @@ public class SearchService {
         if (member == null || auction == null) {
             return false;
         }
-        return interests.stream()
-            .map(Interest::getAuctionId)
-            .anyMatch(id -> id.equals(auction.getId()));
+        for (Interest interest : interests) {
+            String id = interest.getAuctionId();
+            if (id.equals(auction.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isTenderedAuctionByAuction(Member member, Auction auction, List<Tender> tenders) {
         if (member == null || auction == null) {
             return false;
         }
-        return tenders.stream()
-            .map(Tender::getAuctionId)
-            .anyMatch(id -> id.equals(auction.getId()));
+        for (Tender tender : tenders) {
+            String id = tender.getAuctionId();
+            if (id.equals(auction.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public SearchAuctionLocationsResponse getLightAuctionsByLocationRange(

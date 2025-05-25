@@ -30,7 +30,6 @@ public class AuctionCustomRepository {
             .include("csBaseInfo")
             .include("location")
             .include("dspslGdsDxdyInfo")
-            .include("isAuctionCancelled")
             .include("gdsDspslObjctLst")
             .include("aeeWevlMnpntLst")
             .include("auctionStatus");

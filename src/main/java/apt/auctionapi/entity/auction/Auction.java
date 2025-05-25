@@ -68,12 +68,9 @@ public class Auction {
     @Field("location")
     private GeoJsonPoint location;
 
-    /**
-     * 경매 취소/취하 여부 (취하되지 않았다면 null)
-     */
     @JsonIgnore
-    @Field("isAuctionCancelled")
-    private Boolean isAuctionCancelled;
+    @Field("auctionStatus")
+    private String auctionStatus;
 
     public void mappingCodeValues() {
         // 코드값 매핑
