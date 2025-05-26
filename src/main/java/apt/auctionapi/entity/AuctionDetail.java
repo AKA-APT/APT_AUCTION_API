@@ -23,6 +23,8 @@ public class AuctionDetail {
     @JsonIgnore
     private ObjectId auctionId;
 
+    private String keyword;
+
     private int photoCount;
 
     private List<RightHolderGroup> rightHolders;
