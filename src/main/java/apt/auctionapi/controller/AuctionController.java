@@ -139,10 +139,6 @@ public class AuctionController {
     public ResponseEntity<byte[]> getPhoto(
         @PathVariable("id") String auctionId,
         @PathVariable("index") int photoIndex) {
-        byte[] imageBytes = imageService.getPhotoBytes(auctionId, photoIndex);
-        return ResponseEntity
-            .ok()
-            .contentType(MediaType.IMAGE_JPEG)
-            .body(imageBytes);
+        return imageService.getPhotoBytes(auctionId, photoIndex);
     }
 }

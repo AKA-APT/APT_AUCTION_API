@@ -104,7 +104,7 @@ public class ImageService {
         }
     }
 
-    public byte[] getPhotoBytes(String auctionId, int photoIndex) {
+    public ResponseEntity<byte[]> getPhotoBytes(String auctionId, int photoIndex) {
         ObjectId oid;
         try {
             oid = new ObjectId(auctionId);
@@ -130,6 +130,23 @@ public class ImageService {
         if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
             throw new IllegalStateException("이미지 다운로드 실패: " + url);
         }
-        return resp.getBody();
+
+        // 캐시 관련 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        headers.setCacheControl("public, max-age=604800"); // 7일 캐싱
+        
+        // ETag 생성 (객체 식별자와 인덱스 기반)
+        String etag = String.format("\"%s-%d\"", auctionId, photoIndex);
+        headers.setETag(etag);
+        
+        // Last-Modified 헤더 추가
+        if (resp.getHeaders().getLastModified() > 0) {
+            headers.setLastModified(resp.getHeaders().getLastModified());
+        }
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resp.getBody());
     }
 }
