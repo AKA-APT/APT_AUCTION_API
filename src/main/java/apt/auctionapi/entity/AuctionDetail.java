@@ -64,8 +64,8 @@ public class AuctionDetail {
         private String auctionId;
         private String caseId;
         private String caseSite;
-        private int itemNumber;
-        private int occupantNumber;
+        private Integer itemNumber;
+        private Integer occupantNumber;
         private String occupant;
         private String occupancyPart;
         private LocalDate registrationDate;
@@ -87,8 +87,8 @@ public class AuctionDetail {
         private String auctionId;
         private String caseId;
         private String caseSite;
-        private int itemNumber;
-        private int objectNumber;
+        private Integer itemNumber;
+        private Integer objectNumber;
         private String objectType;
         private String usage;
         private String area;
@@ -103,12 +103,12 @@ public class AuctionDetail {
     @Getter
     public static class PublishedPrice {
         private String pnu;
-        private int stdYear;
-        private double totalPublishedPrice;
-        private double publishedPrice;
-        private double sdPublishedPrice;
-        private double sggPublishedPrice;
-        private double emdPublishedPrice;
+        private Integer stdYear;
+        private Double totalPublishedPrice;
+        private Double publishedPrice;
+        private Double sdPublishedPrice;
+        private Double sggPublishedPrice;
+        private Double emdPublishedPrice;
     }
 
     @Getter
@@ -126,15 +126,15 @@ public class AuctionDetail {
         private String heightName;
         private String landShapeName;
         private String roadSideName;
-        private int years;
-        private double area;
-        private double TPUP;
-        private double PUP;
-        private int BD;
-        private int DBD;
-        private double grossAreaSum;
-        private int maxFloorArea;
-        private int maxBuildingRatio;
+        private Integer years;
+        private Double area;
+        private Double TPUP;
+        private Double PUP;
+        private Integer BD;
+        private Integer DBD;
+        private Double grossAreaSum;
+        private Integer maxFloorArea;
+        private Integer maxBuildingRatio;
     }
 
     @Getter
@@ -160,23 +160,23 @@ public class AuctionDetail {
         private String pnu;
         private String bjdCode;
         private LocalDate constructDate;
-        private double grossArea;
-        private int faEstimateToGross;
-        private double floorArea;
-        private double constructArea;
-        private double buildingRatio;
+        private Double grossArea;
+        private Integer faEstimateToGross;
+        private Double floorArea;
+        private Double constructArea;
+        private Double buildingRatio;
         private String mainPurposeName;
         private String mainPurposeIndex;
         private String etcPurpose;
         private String mainOrPartDivName;
-        private int mechParking;
-        private int selfParking;
-        private int groundFloorCnt;
-        private int undergroundFloorCnt;
+        private Integer mechParking;
+        private Integer selfParking;
+        private Integer groundFloorCnt;
+        private Integer undergroundFloorCnt;
         private String roofName;
         private String mainStructureMaterial;
-        private int elevatorCnt;
-        private int emergencyElevatorCnt;
+        private Integer elevatorCnt;
+        private Integer emergencyElevatorCnt;
         private List<FloorInfo> floorInfoList;
     }
 
@@ -184,8 +184,8 @@ public class AuctionDetail {
     public static class FloorInfo {
         private String buildingMasterId;
         private String floorType;
-        private int floor;
-        private double area;
+        private Integer floor;
+        private Double area;
         private String mainOrPartDivName;
         private String mainPurposeName;
         private String etcPurposeName;
@@ -198,9 +198,9 @@ public class AuctionDetail {
         private String auctionId;
         private String caseId;
         private String caseSite;
-        private int itemNumber;
-        private int objectNumber;
-        private int occupantNumber;
+        private Integer itemNumber;
+        private Integer objectNumber;
+        private Integer occupantNumber;
         private String objectAddress;
         private String occupant;
         private String occupantType;
@@ -221,8 +221,8 @@ public class AuctionDetail {
         private String auctionId;
         private String caseId;
         private String caseSite;
-        private int itemNumber;
-        private int objectNumber;
+        private Integer itemNumber;
+        private Integer objectNumber;
         private String objectAddress;
         private String occupancyRelationship;
         private String occupancyRelationshipInfo;
